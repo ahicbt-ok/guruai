@@ -1,6 +1,7 @@
 [build]
-  publish = "."
-  functions = "netlify/functions"
+  base = "guru-ai"
+  publish = "guru-ai"
+  functions = "guru-ai/netlify/functions"
 
 [[headers]]
   for = "/*"
