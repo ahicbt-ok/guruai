@@ -1,0 +1,2464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuruAI - Generator Administrasi Cerdas</title>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f14;
+  --bg2: #13161d;
+  --bg3: #1a1e28;
+  --card: #1e2330;
+  --border: #2a3040;
+  --border2: #323a50;
+  --text: #e8ecf4;
+  --muted: #7a8499;
+  --muted2: #9aa3b8;
+  --accent: #5b5ef4;
+  --accent2: #7b7ef6;
+  --accent-glow: rgba(91,94,244,0.25);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.15);
+  --yellow: #f59e0b;
+  --red: #ef4444;
+  --cyan: #06b6d4;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+/* LIGHT MODE */
+body.light {
+  --bg: #f0f2f8;
+  --bg2: #e8eaf2;
+  --bg3: #ffffff;
+  --card: #ffffff;
+  --border: #dde1ed;
+  --border2: #c8cedf;
+  --text: #1a1d2e;
+  --muted: #7a8099;
+  --muted2: #4a5068;
+  --accent: #4f52e8;
+  --accent2: #5b5ef4;
+  --accent-glow: rgba(79,82,232,0.15);
+  --green: #16a34a;
+  --green-dim: rgba(22,163,74,0.12);
+  --yellow: #d97706;
+  --red: #dc2626;
+  --cyan: #0891b2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+
+/* TOPBAR */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  background:rgba(13,15,20,0.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-logo{
+  display:flex;align-items:center;gap:10px;
+  font-weight:800;font-size:1.1rem;letter-spacing:-0.3px;
+}
+.topbar-logo .icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#5b5ef4,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
+}
+.topbar-logo span{color:var(--accent2)}
+.topbar-actions{display:flex;gap:8px}
+.btn-icon{
+  width:38px;height:38px;border-radius:10px;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--muted2);font-size:1rem;
+  transition:all 0.2s;
+}
+.btn-icon:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.btn-icon.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* SIDEBAR */
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
+}
+.sidebar-overlay.open{display:block}
+.sidebar{
+  position:fixed;top:0;right:-100%;width:280px;height:100vh;
+  background:var(--bg2);border-left:1px solid var(--border);
+  z-index:201;transition:right 0.3s cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;padding:16px;
+}
+.sidebar.open{right:0}
+/* Desktop: sidebar via grid, reset fixed positioning */
+@media(min-width:960px){
+  .sidebar{
+    position:sticky !important;
+    right:auto !important;
+    top:62px !important;
+    height:calc(100vh - 62px) !important;
+    border-left:none;
+    border-right:1px solid var(--border);
+    overflow-y:auto;
+    z-index:10;
+  }
+}
+.sidebar-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:12px;
+}
+.sidebar-header h3{font-size:0.85rem;font-weight:600;color:var(--muted2);letter-spacing:1px;text-transform:uppercase}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:var(--radius-sm);
+  cursor:pointer;transition:all 0.15s;color:var(--muted2);
+  font-weight:600;font-size:0.95rem;
+  margin-bottom:4px;
+}
+.nav-item:hover{background:var(--card);color:var(--text)}
+.nav-item.active{background:var(--accent);color:#fff}
+.nav-item .nav-icon{font-size:1.1rem;width:22px;text-align:center}
+.sidebar-footer{
+  margin-top:auto;padding-top:16px;border-top:1px solid var(--border);
+  text-align:center;font-size:0.75rem;color:var(--muted);
+  font-family:'Space Mono',monospace;
+}
+
+/* API MODE BADGE */
+.api-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:7px 14px 7px 10px;border-radius:30px;
+  border:1.5px solid;font-size:0.78rem;font-weight:700;
+  letter-spacing:0.5px;font-family:'Space Mono',monospace;
+  margin:0 auto 6px;
+}
+.api-badge.gratis{border-color:var(--accent);color:var(--accent2);background:rgba(91,94,244,0.1)}
+.api-badge.kustom{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.api-badge .dot{width:8px;height:8px;border-radius:50%;animation:pulse 2s infinite}
+.api-badge.gratis .dot{background:var(--accent)}
+.api-badge.kustom .dot{background:var(--green)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.fingerprint{
+  font-family:'Space Mono',monospace;font-size:0.7rem;
+  color:var(--muted);background:var(--bg3);border:1px solid var(--border);
+  padding:4px 12px;border-radius:20px;display:inline-block;
+}
+.api-center{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:20px}
+
+/* MAIN LAYOUT */
+.main{padding-top:62px;min-height:100vh}
+.page{display:none;padding:20px 16px 80px;max-width:500px;margin:0 auto}
+.page.active{display:block;animation:fadeIn 0.25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* HERO SECTION */
+.hero{padding:28px 0 20px}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(91,94,244,0.12);border:1px solid rgba(91,94,244,0.3);
+  color:var(--accent2);padding:4px 12px;border-radius:20px;
+  font-size:0.75rem;font-weight:700;letter-spacing:0.5px;margin-bottom:12px;
+}
+.hero h1{font-size:2rem;font-weight:800;line-height:1.2;margin-bottom:8px}
+.hero h1 span{color:var(--accent2)}
+.hero p{color:var(--muted2);font-size:0.9rem;line-height:1.5}
+
+/* MODULE GRID */
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.module-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;cursor:pointer;
+  transition:all 0.2s;position:relative;overflow:hidden;
+}
+.module-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--accent-glow),transparent);
+  opacity:0;transition:opacity 0.2s;
+}
+.module-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.module-card:hover::before{opacity:1}
+.module-card .mc-icon{
+  font-size:1.6rem;margin-bottom:10px;
+  width:44px;height:44px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+}
+.mc-rpp{background:rgba(91,94,244,0.15)}
+.mc-prota{background:rgba(245,158,11,0.15)}
+.mc-promes{background:rgba(6,182,212,0.15)}
+.mc-lkpd{background:rgba(168,85,247,0.15)}
+.mc-soal{background:rgba(34,197,94,0.15)}
+.module-card h3{font-size:0.9rem;font-weight:700;margin-bottom:4px}
+.module-card p{font-size:0.75rem;color:var(--muted);line-height:1.4}
+.module-tag{
+  position:absolute;top:10px;right:10px;
+  background:rgba(91,94,244,0.2);color:var(--accent2);
+  font-size:0.6rem;font-weight:700;padding:2px 7px;
+  border-radius:10px;letter-spacing:0.5px;font-family:'Space Mono',monospace;
+}
+
+/* PROFIL SECTION */
+.section-title{
+  font-size:0.7rem;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--muted);margin-bottom:10px;
+}
+.profil-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:16px;
+}
+.profil-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.profil-item label{display:block;font-size:0.68rem;color:var(--muted);font-weight:600;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:3px}
+.profil-item span{font-size:0.85rem;font-weight:600}
+.profil-empty{color:var(--muted);font-style:italic;font-size:0.8rem}
+
+/* FORM STYLES */
+.form-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px;margin-bottom:14px;
+}
+.section-label{
+  font-size:0.65rem;font-weight:700;letter-spacing:1.5px;
+  color:var(--accent2);text-transform:uppercase;
+  border-left:3px solid var(--accent);padding-left:8px;
+  margin-bottom:14px;
+}
+.form-group{margin-bottom:14px}
+.form-group:last-child{margin-bottom:0}
+.form-group label{
+  display:block;font-size:0.72rem;font-weight:600;
+  color:var(--muted2);letter-spacing:0.5px;text-transform:uppercase;
+  margin-bottom:6px;
+}
+.form-control{
+  width:100%;background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 13px;
+  color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:0.9rem;transition:border-color 0.2s;outline:none;
+  -webkit-appearance:none;appearance:none;
+}
+.form-control:focus{border-color:var(--accent)}
+.form-control::placeholder{color:var(--muted)}
+select.form-control{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8499' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+  padding-right:36px;cursor:pointer;
+}
+textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
+
+/* DIMENSI GRID */
+.dimensi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dimensi-item{
+  display:flex;flex-direction:column;align-items:center;
+  gap:6px;padding:10px 8px;border-radius:10px;
+  background:var(--bg3);border:1.5px solid var(--border);
+  cursor:pointer;transition:all 0.15s;text-align:center;
+}
+.dimensi-item.selected{background:rgba(91,94,244,0.15);border-color:var(--accent)}
+.dimensi-item .d-icon{font-size:1.3rem}
+.dimensi-item span{font-size:0.65rem;font-weight:600;color:var(--muted2);line-height:1.2}
+.dimensi-item.selected span{color:var(--text)}
+
+/* TOGGLE ROW */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
+.toggle-row label{font-size:0.85rem;font-weight:500;color:var(--text)}
+.toggle{position:relative;width:44px;height:24px}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{
+  position:absolute;inset:0;background:var(--border2);
+  border-radius:24px;cursor:pointer;transition:0.2s;
+}
+.toggle-slider:before{
+  content:'';position:absolute;width:18px;height:18px;
+  left:3px;bottom:3px;background:white;border-radius:50%;transition:0.2s;
+}
+.toggle input:checked + .toggle-slider{background:var(--green)}
+.toggle input:checked + .toggle-slider:before{transform:translateX(20px)}
+
+/* KISI-KISI TOGGLE */
+.kisi-toggle{display:flex;gap:8px}
+.kisi-btn{
+  flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--bg3);color:var(--muted2);font-size:0.8rem;font-weight:600;
+  cursor:pointer;transition:all 0.15s;text-align:center;
+}
+.kisi-btn.active{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+
+/* BTN GENERATE */
+.btn-generate{
+  width:100%;padding:16px;border-radius:var(--radius);
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;font-weight:700;
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  gap:10px;transition:all 0.2s;position:relative;overflow:hidden;
+}
+.btn-generate.rpp{background:linear-gradient(135deg,#5b5ef4,#8b5cf6)}
+.btn-generate.prota{background:linear-gradient(135deg,#f59e0b,#ef4444)}
+.btn-generate.promes{background:linear-gradient(135deg,#06b6d4,#3b82f6)}
+.btn-generate.lkpd{background:linear-gradient(135deg,#a855f7,#ec4899)}
+.btn-generate.soal{background:linear-gradient(135deg,#22c55e,#06b6d4)}
+.btn-generate:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.btn-generate:active{transform:translateY(0)}
+.btn-generate:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.btn-generate .spinner{
+  width:18px;height:18px;border:2.5px solid rgba(255,255,255,0.3);
+  border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:none;
+}
+.btn-generate.loading .spinner{display:block}
+.btn-generate.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* PAGE HEADER */
+.page-header{padding:20px 0 16px}
+.page-header .ph-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(91,94,244,0.15);border:1px solid rgba(91,94,244,0.3);
+  color:var(--accent2);padding:3px 10px;border-radius:6px;
+  font-size:0.65rem;font-weight:700;letter-spacing:1px;font-family:'Space Mono',monospace;
+  margin-bottom:8px;text-transform:uppercase;
+}
+.page-header h2{font-size:1.6rem;font-weight:800;margin-bottom:5px}
+.page-header p{color:var(--muted2);font-size:0.85rem}
+
+/* RESULT AREA */
+.result-wrapper{margin-top:16px;display:none}
+.result-wrapper.show{display:block}
+.result-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;
+}
+.result-header h4{font-size:0.85rem;font-weight:700;color:var(--green)}
+.btn-copy{
+  display:flex;align-items:center;gap:5px;
+  background:var(--card);border:1px solid var(--border);
+  color:var(--muted2);padding:6px 12px;border-radius:8px;
+  cursor:pointer;font-size:0.78rem;font-weight:600;transition:all 0.15s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-copy:hover{border-color:var(--green);color:var(--green)}
+.result-box{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+  font-size:0.85rem;line-height:1.7;color:var(--muted2);
+  max-height:500px;overflow-y:auto;white-space:pre-wrap;word-wrap:break-word;
+}
+.result-box strong{color:var(--text);font-weight:700}
+
+/* ERROR */
+.error-box{
+  background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+  color:#fca5a5;padding:12px 16px;border-radius:var(--radius-sm);
+  font-size:0.85rem;margin-top:12px;display:none;
+}
+.error-box.show{display:block}
+
+/* API CONFIG PAGE */
+.api-mode-cards{display:flex;flex-direction:column;gap:10px;margin:16px 0}
+.api-mode-card{
+  background:var(--card);border:2px solid var(--border);
+  border-radius:var(--radius);padding:18px;cursor:pointer;transition:all 0.2s;
+}
+.api-mode-card.selected.gratis{border-color:var(--accent);background:rgba(91,94,244,0.08)}
+.api-mode-card.selected.kustom{border-color:var(--green);background:rgba(34,197,94,0.08)}
+.api-mode-card .amc-top{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.api-mode-card .amc-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;
+}
+.amc-icon.gratis{background:rgba(91,94,244,0.2)}
+.amc-icon.kustom{background:rgba(34,197,94,0.2)}
+.api-mode-card h4{font-size:1rem;font-weight:700}
+.api-mode-card p{font-size:0.8rem;color:var(--muted2)}
+.api-key-input-wrap{position:relative;margin-top:12px}
+.api-key-input-wrap input{
+  width:100%;background:var(--bg3);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 13px 10px 38px;
+  color:var(--text);font-family:'Space Mono',monospace;
+  font-size:0.8rem;outline:none;transition:border-color 0.2s;
+}
+.api-key-input-wrap input:focus{border-color:var(--green)}
+.api-key-input-wrap .lock{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:0.9rem;
+}
+.info-note{
+  display:flex;align-items:flex-start;gap:8px;
+  font-size:0.78rem;color:var(--muted2);margin-top:8px;
+  line-height:1.4;
+}
+.info-note .ni{flex-shrink:0;margin-top:1px}
+
+/* SETTINGS PAGE */
+.settings-group{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px}
+.settings-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border);
+}
+.settings-item:last-child{border-bottom:none}
+.si-label{font-size:0.9rem;font-weight:500}
+.si-value{font-size:0.8rem;color:var(--muted2)}
+.btn-save{
+  width:100%;padding:14px;border-radius:var(--radius);
+  background:linear-gradient(135deg,#5b5ef4,#8b5cf6);
+  border:none;color:white;font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:0.95rem;font-weight:700;cursor:pointer;transition:all 0.2s;
+}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(91,94,244,0.4)}
+
+/* ABOUT PAGE */
+.about-hero{
+  background:linear-gradient(135deg,rgba(91,94,244,0.15),rgba(139,92,246,0.1));
+  border:1px solid rgba(91,94,244,0.2);border-radius:var(--radius);
+  padding:24px;text-align:center;margin-bottom:16px;
+}
+.about-hero .ai{font-size:2.5rem;margin-bottom:8px}
+.about-hero h2{font-size:1.4rem;font-weight:800;margin-bottom:6px}
+.about-hero h2 span{color:var(--accent2)}
+.about-hero p{font-size:0.85rem;color:var(--muted2);line-height:1.5}
+.feature-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.feature-item{
+  display:flex;align-items:flex-start;gap:12px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px;
+}
+.fi-icon{font-size:1.2rem;flex-shrink:0;margin-top:1px}
+.fi-text h5{font-size:0.9rem;font-weight:700;margin-bottom:3px}
+.fi-text p{font-size:0.78rem;color:var(--muted2);line-height:1.4}
+.disclaimer{
+  background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);
+  border-radius:var(--radius);padding:16px;
+}
+.disclaimer h4{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.85rem;font-weight:700;color:var(--yellow);margin-bottom:10px;
+}
+.disclaimer ul{padding-left:16px}
+.disclaimer li{font-size:0.78rem;color:var(--muted2);line-height:1.6;margin-bottom:4px}
+
+/* GAMBAR SOAL INLINE */
+.soal-image-wrap{
+  margin:14px 0 18px;
+  border-radius:var(--radius);
+  overflow:hidden;
+  border:1.5px solid rgba(6,182,212,0.35);
+  background:var(--bg3);
+  display:flex;flex-direction:column;
+  align-items:center;
+  box-shadow:0 4px 20px rgba(6,182,212,0.08);
+}
+.soal-image-wrap img{
+  max-width:100%;height:auto;
+  display:block;
+}
+.soal-image-cap{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  font-size:0.68rem;color:var(--cyan);font-weight:600;
+  padding:6px 12px;text-align:center;
+  background:rgba(6,182,212,0.08);
+  width:100%;border-top:1px solid rgba(6,182,212,0.2);
+  letter-spacing:0.3px;
+}
+.img-loading{
+  display:flex;align-items:center;gap:8px;
+  font-size:0.75rem;color:var(--cyan);font-weight:600;
+  padding:10px;
+}
+.img-loading .dot-spin{
+  width:8px;height:8px;border-radius:50%;
+  border:2px solid var(--cyan);border-top-color:transparent;
+  animation:spin 0.8s linear infinite;
+}
+
+/* ILUSTRASI BOX */
+.ilustrasi-box{
+  background:rgba(6,182,212,0.08);border:1.5px dashed rgba(6,182,212,0.4);
+  border-radius:var(--radius-sm);padding:12px 14px;margin:8px 0;
+}
+.ilustrasi-box .il-header{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.65rem;font-weight:700;letter-spacing:1px;
+  color:var(--cyan);margin-bottom:6px;
+}
+.ilustrasi-box p{
+  font-size:0.8rem;color:var(--muted2);line-height:1.5;margin:0;
+  font-style:italic;
+}
+
+/* PROGRESS BAR GENERATE GAMBAR */
+.gen-progress-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:var(--bg);flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;padding:24px;
+}
+.gen-progress-overlay.show{display:flex}
+.gpo-icon{
+  width:72px;height:72px;border-radius:20px;
+  background:linear-gradient(135deg,rgba(91,94,244,0.2),rgba(139,92,246,0.2));
+  border:2px solid rgba(91,94,244,0.3);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--accent2);margin-bottom:4px;
+}
+.gpo-title{
+  font-size:1.3rem;font-weight:800;color:var(--text);
+  text-align:center;
+}
+.gpo-subtitle{
+  font-size:0.82rem;color:var(--muted2);text-align:center;
+  max-width:280px;line-height:1.5;
+}
+.gpo-step{
+  font-size:0.75rem;font-weight:700;letter-spacing:0.5px;
+  color:var(--accent2);font-family:'Space Mono',monospace;
+  text-align:center;min-height:18px;transition:all 0.3s;
+}
+.gpo-bar-wrap{
+  width:100%;max-width:300px;
+  background:var(--border);border-radius:20px;
+  height:8px;overflow:hidden;
+}
+.gpo-bar{
+  height:100%;border-radius:20px;
+  background:linear-gradient(90deg,var(--accent),var(--green));
+  transition:width 0.5s cubic-bezier(0.4,0,0.2,1);
+  width:0%;
+}
+.gpo-pct{
+  font-size:0.8rem;font-weight:700;color:var(--muted2);
+  font-family:'Space Mono',monospace;
+}
+.gpo-img-preview{
+  display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+  max-width:320px;min-height:40px;
+}
+.gpo-thumb{
+  width:40px;height:40px;border-radius:6px;
+  object-fit:cover;border:2px solid var(--green);
+  animation:thumbIn 0.3s ease;
+}
+@keyframes thumbIn{from{opacity:0;transform:scale(0.7)}to{opacity:1;transform:scale(1)}}
+.gpo-note{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:10px 16px;
+  font-size:0.72rem;color:var(--muted2);text-align:center;
+  max-width:300px;line-height:1.5;
+}
+.gpo-note strong{color:var(--yellow)}
+
+/* LOADING OVERLAY */
+.loading-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:var(--bg);flex-direction:column;
+  align-items:center;justify-content:center;gap:20px;
+}
+.loading-overlay.show{display:flex}
+.loading-circle{
+  width:90px;height:90px;position:relative;
+}
+.loading-circle svg{
+  width:100%;height:100%;animation:rotate 1.8s linear infinite;
+}
+.loading-circle .track{fill:none;stroke:var(--border2);stroke-width:3}
+.loading-circle .fill{
+  fill:none;stroke:var(--green);stroke-width:3;
+  stroke-linecap:round;
+  stroke-dasharray:200;stroke-dashoffset:60;
+  animation:dash 1.8s ease-in-out infinite;
+}
+.loading-circle .inner-icon{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  font-size:1.4rem;
+}
+@keyframes rotate{to{transform:rotate(360deg)}}
+@keyframes dash{
+  0%{stroke-dashoffset:200}
+  50%{stroke-dashoffset:40}
+  100%{stroke-dashoffset:200}
+}
+.loading-steps{
+  display:flex;flex-direction:column;gap:10px;margin:4px 0;width:100%;max-width:260px;
+}
+.ls-item{
+  display:flex;align-items:center;gap:10px;
+  transition:opacity 0.3s;
+}
+.ls-item.done .ls-dot{background:var(--green);border-color:var(--green)}
+.ls-item.done .ls-dot::after{content:'✓';font-size:9px;color:white;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.ls-item.active .ls-dot{border-color:var(--green);animation:dotPulse 1s infinite}
+.ls-dot{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--border2);background:var(--bg3);
+  position:relative;flex-shrink:0;transition:all 0.3s;
+}
+.ls-item span{font-size:0.82rem;font-weight:600;color:var(--muted2);transition:color 0.3s}
+.ls-item.active span{color:var(--text)}
+.ls-item.done span{color:var(--green)}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.loading-progressbar{width:100%;max-width:260px;margin:4px 0}
+.lpb-track{
+  height:6px;background:var(--border2);border-radius:10px;overflow:hidden;margin-bottom:6px;
+}
+.lpb-fill{
+  height:100%;background:linear-gradient(90deg,#6366f1,#22c55e);
+  border-radius:10px;transition:width 0.4s ease;
+}
+.lpb-label{font-size:0.72rem;color:var(--muted2);text-align:center;font-family:'Space Mono',monospace}
+.loading-title{
+  font-size:1.4rem;font-weight:800;color:var(--green);
+  text-align:center;animation:blink 1.5s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.6}}
+.loading-note{
+  background:var(--green-dim);border:1px solid rgba(34,197,94,0.3);
+  color:var(--green);padding:12px 20px;border-radius:var(--radius-sm);
+  font-size:0.72rem;font-weight:700;letter-spacing:0.5px;
+  text-align:center;max-width:300px;line-height:1.5;
+  transition:all 0.3s;
+}
+
+/* EXPORT BUTTONS */
+.export-bar{
+  display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;
+}
+.btn-export{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:8px;border:1.5px solid;
+  font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.15s;
+  font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-export.docx{border-color:#2563eb;color:#2563eb;background:rgba(37,99,235,0.08)}
+.btn-export.docx:hover{background:rgba(37,99,235,0.15)}
+.btn-export.pdf{border-color:#dc2626;color:#dc2626;background:rgba(220,38,38,0.08)}
+.btn-export.pdf:hover{background:rgba(220,38,38,0.15)}
+.btn-export.print{border-color:var(--muted2);color:var(--muted2);background:rgba(122,132,153,0.08)}
+.btn-export.print:hover{background:rgba(122,132,153,0.15);color:var(--text)}
+.btn-susun-ulang{
+  display:flex;align-items:center;gap:6px;
+  background:none;border:none;color:var(--accent2);
+  font-size:0.82rem;font-weight:600;cursor:pointer;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  padding:6px 0;margin-bottom:8px;
+}
+.btn-susun-ulang:hover{color:var(--accent);text-decoration:underline}
+
+/* RESULT DOCUMENT STYLE */
+.result-doc{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.result-doc-inner{
+  padding:24px 20px;font-size:0.85rem;line-height:1.7;
+  color:var(--text);max-height:600px;overflow-y:auto;
+}
+.result-doc-inner h1{font-size:1.1rem;font-weight:800;text-align:center;margin-bottom:4px}
+.result-doc-inner h2{font-size:0.9rem;font-weight:700;margin:14px 0 6px;color:var(--accent2);border-left:3px solid var(--accent);padding-left:8px}
+.result-doc-inner h3{font-size:0.85rem;font-weight:700;margin:10px 0 4px}
+.result-doc-inner table{width:100%;border-collapse:collapse;margin:10px 0;font-size:0.8rem}
+.result-doc-inner th{background:var(--accent);color:white;padding:7px 10px;text-align:left;font-size:0.75rem}
+.result-doc-inner td{padding:6px 10px;border:1px solid var(--border);vertical-align:top}
+.result-doc-inner tr:nth-child(even) td{background:rgba(91,94,244,0.04)}
+.result-doc-inner .ttd-section{margin-top:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.result-doc-inner .ttd-box{flex:1;min-width:120px;text-align:center}
+.result-doc-inner .ttd-box p{font-size:0.78rem}
+.result-doc-inner .ttd-box .ttd-name{font-weight:700;border-top:1.5px solid var(--text);padding-top:4px;margin-top:36px;font-size:0.8rem}
+.result-doc-inner .ttd-box .nip{font-size:0.72rem;color:var(--muted2)}
+.result-doc-inner .kunci{margin-top:14px}
+.result-doc-inner .kunci h3{color:var(--green)}
+.result-doc-inner .kunci-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+.result-doc-inner .kunci-item{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px;text-align:center;font-size:0.78rem;font-weight:700}
+.result-doc-inner .kunci-item span{display:block;font-size:0.65rem;font-weight:400;color:var(--muted2)}
+.result-doc-inner ol{padding-left:20px;margin:8px 0}
+.result-doc-inner li{margin-bottom:8px}
+.result-doc-inner .soal-options{list-style:none;padding-left:16px;margin:4px 0 12px}
+.result-doc-inner .soal-options li{margin-bottom:2px;font-size:0.82rem}
+.result-doc-inner .jawaban-badge{
+  display:inline-block;background:var(--green-dim);color:var(--green);
+  font-size:0.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-top:2px;
+}
+.result-doc-inner .header-info{
+  text-align:center;border-bottom:2px solid var(--text);padding-bottom:10px;margin-bottom:14px;
+}
+.result-doc-inner .header-info p{font-size:0.78rem;margin:1px 0}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--card);border:1px solid var(--green);
+  color:var(--green);padding:10px 20px;border-radius:30px;
+  font-size:0.82rem;font-weight:600;z-index:999;
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* FOOTER */
+.footer{
+  text-align:center;padding:12px;
+  font-size:0.72rem;color:var(--muted);
+  border-top:1px solid var(--border);
+  font-family:'Space Mono',monospace;
+}
+.footer a{color:var(--accent2);text-decoration:none}
+
+/* LOADING DOTS */
+.loading-dots{display:flex;gap:4px;align-items:center;justify-content:center;padding:20px}
+.loading-dots span{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  animation:bounce 1.2s infinite;
+}
+.loading-dots span:nth-child(2){animation-delay:0.2s}
+.loading-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+
+/* ===================== RESPONSIVE — TABLET & LAPTOP ===================== */
+
+/* Tablet (≥600px) */
+@media (min-width: 600px) {
+  .page{padding:24px 24px 80px}
+  .module-grid{grid-template-columns:1fr 1fr 1fr}
+  .module-card:last-child{grid-column:auto}
+  .dimensi-grid{grid-template-columns:1fr 1fr 1fr 1fr}
+  .profil-grid{grid-template-columns:1fr 1fr 1fr}
+  .result-doc-inner{padding:28px 24px}
+  .export-bar{flex-wrap:nowrap}
+  .kunci-grid{grid-template-columns:repeat(8,1fr)}
+}
+
+/* Laptop / Desktop (≥960px) */
+@media (min-width: 960px) {
+  /* Layout dua kolom: sidebar tetap di kiri, konten di kanan */
+  body{display:grid;grid-template-columns:260px 1fr;grid-template-rows:62px 1fr;min-height:100vh}
+
+  .topbar{
+    grid-column:1/-1;
+    padding:12px 28px;
+    height:62px;
+  }
+
+  /* Sidebar selalu tampil di desktop */
+  .sidebar-overlay{display:none !important}
+  .sidebar{
+    position:sticky;top:62px;right:auto;left:0;
+    height:calc(100vh - 62px);
+    border-left:none;border-right:1px solid var(--border);
+    transform:none !important;
+    grid-row:2;grid-column:1;
+    padding:20px 12px;
+  }
+  .sidebar.open,.sidebar{right:auto !important}
+  .btn-icon#btnMenu{display:none}
+
+  .main{
+    grid-row:2;grid-column:2;
+    padding-top:0;
+  }
+
+  .page{
+    max-width:720px;
+    padding:28px 32px 80px;
+  }
+
+  .module-grid{grid-template-columns:1fr 1fr 1fr}
+  .module-card:last-child{grid-column:auto}
+
+  .form-card{padding:22px 24px}
+  .dimensi-grid{grid-template-columns:repeat(4,1fr)}
+  .profil-grid{grid-template-columns:1fr 1fr 1fr}
+
+  .result-doc-inner{
+    padding:32px 28px;
+    font-size:0.88rem;
+    max-height:none;
+  }
+
+  .export-bar{flex-wrap:nowrap;gap:10px}
+  .btn-export{padding:9px 18px}
+
+  .api-mode-cards{flex-direction:row;gap:12px}
+  .api-mode-card{flex:1}
+
+  .hero h1{font-size:2.4rem}
+
+  /* Progress & loading overlay */
+  .gen-progress-overlay,.loading-overlay{
+    grid-column:2;
+    grid-row:2;
+  }
+
+  /* Toast */
+  .toast{left:calc(260px + 50%)}
+
+  /* Sidebar nav item styling di desktop */
+  .nav-item{font-size:0.88rem;padding:10px 12px}
+  .sidebar-footer{font-size:0.68rem}
+}
+
+/* Wide Desktop (≥1280px) */
+@media (min-width: 1280px) {
+  .sidebar{width:280px}
+  .page{max-width:800px;padding:32px 40px 80px}
+  .module-grid{grid-template-columns:repeat(3,1fr)}
+  .dimensi-grid{grid-template-columns:repeat(4,1fr)}
+}
+
+/* ===================== PRINT ===================== */
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="icon" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="36" height="36" rx="10" fill="url(#lgbook)"/>
+<path d="M18 10C18 10 14 8.5 10 9.5V26.5C14 25.5 18 27 18 27V10Z" fill="white" fill-opacity="0.9"/>
+<path d="M18 10C18 10 22 8.5 26 9.5V26.5C22 25.5 18 27 18 27V10Z" fill="white" fill-opacity="0.7"/>
+<path d="M18 10V27" stroke="white" stroke-width="1.2" stroke-opacity="0.6"/>
+<line x1="12" y1="13" x2="16" y2="12.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.7"/>
+<line x1="12" y1="16" x2="16" y2="15.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.7"/>
+<line x1="12" y1="19" x2="16" y2="18.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.7"/>
+<line x1="20" y1="12.5" x2="24" y2="13" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="20" y1="15.5" x2="24" y2="16" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.5"/>
+<line x1="20" y1="18.5" x2="24" y2="19" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-opacity="0.5"/>
+<defs><linearGradient id="lgbook" x1="0" y1="0" x2="36" y2="36">
+<stop stop-color="#4f46e5"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+</svg></div>
+    <span>Guru<span>AI</span></span>
+  </div>
+  <div class="topbar-actions">
+    <div class="btn-icon" id="btnTheme" onclick="toggleTheme()" title="Ganti Tema"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+    <div class="btn-icon" id="btnSettings" onclick="showPage('settings')" title="Pengaturan"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+    <div class="btn-icon" id="btnMenu" onclick="toggleSidebar()" title="Menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h3>Menu</h3>
+    <div class="btn-icon" onclick="toggleSidebar()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
+  </div>
+  <div class="nav-item active" id="nav-home" onclick="showPage('home')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Beranda
+  </div>
+  <div class="nav-item" id="nav-rpp" onclick="showPage('rpp')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> RPP / Modul Ajar
+  </div>
+  <div class="nav-item" id="nav-prota" onclick="showPage('prota')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> PROTA
+  </div>
+  <div class="nav-item" id="nav-promes" onclick="showPage('promes')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg> PROMES
+  </div>
+  <div class="nav-item" id="nav-lkpd" onclick="showPage('lkpd')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> LKPD
+  </div>
+  <div class="nav-item" id="nav-soal" onclick="showPage('soal')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Bank Soal &amp; Kisi-kisi
+  </div>
+  <div class="nav-item" id="nav-tentang" onclick="showPage('tentang')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Tentang
+  </div>
+  <div class="sidebar-footer">GURUAI v1.0.0<br>© 2026</div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-circle">
+    <svg viewBox="0 0 90 90">
+      <circle class="track" cx="45" cy="45" r="40"/>
+      <circle class="fill" id="loadingCircleFill" cx="45" cy="45" r="40"/>
+    </svg>
+    <div class="inner-icon" id="loadingIcon" style="display:flex;align-items:center;justify-content:center;color:var(--green)">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+    </div>
+  </div>
+  <div class="loading-title" id="loadingTitle">Sedang Memproses...</div>
+  <div class="loading-steps" id="loadingSteps" style="display:none">
+    <div class="ls-item" id="lstep0">
+      <div class="ls-dot"></div>
+      <span id="lstep0text">Menyusun soal...</span>
+    </div>
+    <div class="ls-item" id="lstep1" style="opacity:0.35">
+      <div class="ls-dot"></div>
+      <span id="lstep1text">Membuat ilustrasi...</span>
+    </div>
+  </div>
+  <div class="loading-progressbar" id="loadingProgressBar" style="display:none">
+    <div class="lpb-track">
+      <div class="lpb-fill" id="lpbFill" style="width:0%"></div>
+    </div>
+    <div class="lpb-label" id="lpbLabel">0%</div>
+  </div>
+  <div class="loading-note" id="loadingNote">AI SEDANG MEMPROSES PERMINTAAN ANDA. MOHON TUNGGU SEBENTAR.</div>
+</div>
+
+
+<!-- PROGRESS OVERLAY (Soal Bergambar) -->
+<div class="gen-progress-overlay" id="genProgressOverlay">
+  <div class="gpo-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+  <div class="gpo-title" id="gpoTitle">Sedang Merumuskan Soal...</div>
+  <div class="gpo-subtitle" id="gpoSubtitle">AI sedang menyusun soal berkualitas untuk Anda</div>
+  <div class="gpo-step" id="gpoStep"></div>
+  <div class="gpo-bar-wrap">
+    <div class="gpo-bar" id="gpoBar"></div>
+  </div>
+  <div class="gpo-pct" id="gpoPct">0%</div>
+  <div class="gpo-img-preview" id="gpoImgPreview"></div>
+  <div class="gpo-note">
+    <strong>Mode Bergambar Aktif</strong><br>
+    AI akan menghasilkan 1 ilustrasi dari keseluruhan soal sebagai variasi visual. Proses ini memerlukan waktu lebih lama.
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> AI MODUL</div>
+      <h1>Salam <span>Pendidikan</span></h1>
+      <p>Generator administrasi guru cerdas berbasis AI. Lengkapi profil Anda untuk personalisasi dokumen otomatis.</p>
+    </div>
+    <div class="api-center" id="homeApiStatus"></div>
+    <p class="section-title">Profil Guru</p>
+    <div class="profil-card" id="profilPreview">
+      <p class="profil-empty">Belum ada profil. Lengkapi di <strong>Pengaturan ⚙️</strong></p>
+    </div>
+    <p class="section-title" style="margin-top:20px">Pilih Generator</p>
+    <div class="module-grid">
+      <div class="module-card" onclick="showPage('rpp')">
+        <div class="module-tag">AI</div>
+        <div class="mc-icon mc-rpp" style="color:#6366f1"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+        <h3>RPP / Modul Ajar</h3>
+        <p>Modul ajar standar nasional Kurikulum Merdeka</p>
+      </div>
+      <div class="module-card" onclick="showPage('prota')">
+        <div class="module-tag">AI</div>
+        <div class="mc-icon mc-prota" style="color:#f59e0b"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div>
+        <h3>PROTA</h3>
+        <p>Program Tahunan alokasi waktu otomatis</p>
+      </div>
+      <div class="module-card" onclick="showPage('promes')">
+        <div class="module-tag">AI</div>
+        <div class="mc-icon mc-promes" style="color:#06b6d4"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg></div>
+        <h3>PROMES</h3>
+        <p>Program Semester distribusi materi per minggu</p>
+      </div>
+      <div class="module-card" onclick="showPage('lkpd')">
+        <div class="module-tag">AI</div>
+        <div class="mc-icon mc-lkpd" style="color:#a855f7"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+        <h3>LKPD</h3>
+        <p>Lembar kerja siswa interaktif & terstruktur</p>
+      </div>
+      <div class="module-card" onclick="showPage('soal')" style="grid-column:1/-1">
+        <div class="module-tag">AI</div>
+        <div class="mc-icon mc-soal" style="color:#22c55e"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <h3>Bank Soal & Kisi-kisi</h3>
+        <p>Soal HOTS/MOTS/LOTS berkualitas + kisi-kisi otomatis</p>
+      </div>
+    </div>
+    <div class="footer" style="margin-top:30px">© 2026 GuruAI — Untuk kemajuan pendidikan Indonesia</div>
+  </div>
+
+  <!-- RPP -->
+  <div class="page" id="page-rpp">
+    <div class="page-header">
+      <div class="ph-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> AI MODUL</div>
+      <h2>Penyusun RPP</h2>
+      <p>Buat modul ajar standar nasional dengan teknologi AI Deep Learning.</p>
+    </div>
+    <div class="api-center" id="rppApiStatus"></div>
+    <div class="form-card">
+      <div class="section-label">I. INFORMASI UMUM</div>
+      <div class="form-group">
+        <label>Mata Pelajaran</label>
+        <input type="text" class="form-control" id="rppMapel" placeholder="Contoh: Matematika">
+      </div>
+      <div class="form-group">
+        <label>Fase / Kelas</label>
+        <select class="form-control" id="rppKelas">
+          <option value="">Pilih Jenjang</option>
+          <option>Fase Fondasi (PAUD/TK)</option>
+          <option>Kelas 1 SD/MI (Fase A)</option>
+          <option>Kelas 2 SD/MI (Fase A)</option>
+          <option>Kelas 3 SD/MI (Fase B)</option>
+          <option>Kelas 4 SD/MI (Fase B)</option>
+          <option>Kelas 5 SD/MI (Fase C)</option>
+          <option>Kelas 6 SD/MI (Fase C)</option>
+          <option>Kelas 7 SMP/MTs (Fase D)</option>
+          <option>Kelas 8 SMP/MTs (Fase D)</option>
+          <option>Kelas 9 SMP/MTs (Fase D)</option>
+          <option>Kelas 10 SMA/MA/SMK (Fase E)</option>
+          <option>Kelas 11 SMA/MA/SMK (Fase F)</option>
+          <option>Kelas 12 SMA/MA/SMK (Fase F)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Materi Pokok / Topik</label>
+        <input type="text" class="form-control" id="rppMateri" placeholder="Contoh: Persamaan Kuadrat">
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="section-label">DIMENSI PROFIL PELAJAR PANCASILA</div>
+      <div class="dimensi-grid" id="dimensiGrid">
+        <div class="dimensi-item" data-val="Beriman & Bertakwa" onclick="toggleDimensi(this)">
+          <span class="d-icon">🕌</span><span>Keimanan/ketakwaan terhadap Tuhan YME</span>
+        </div>
+        <div class="dimensi-item" data-val="Berkebinekaan Global" onclick="toggleDimensi(this)">
+          <span class="d-icon">🏛️</span><span>Berkebinekaan Global</span>
+        </div>
+        <div class="dimensi-item" data-val="Bernalar Kritis" onclick="toggleDimensi(this)">
+          <span class="d-icon">🧠</span><span>Bernalar Kritis</span>
+        </div>
+        <div class="dimensi-item" data-val="Kreatif" onclick="toggleDimensi(this)">
+          <span class="d-icon">💡</span><span>Kreatif</span>
+        </div>
+        <div class="dimensi-item" data-val="Bergotong Royong" onclick="toggleDimensi(this)">
+          <span class="d-icon">🤝</span><span>Bergotong Royong</span>
+        </div>
+        <div class="dimensi-item" data-val="Mandiri" onclick="toggleDimensi(this)">
+          <span class="d-icon">🌱</span><span>Mandiri</span>
+        </div>
+        <div class="dimensi-item" data-val="Sehat Jasmani Rohani" onclick="toggleDimensi(this)">
+          <span class="d-icon">💪</span><span>Sehat Jasmani Rohani</span>
+        </div>
+        <div class="dimensi-item" data-val="Komunikatif" onclick="toggleDimensi(this)">
+          <span class="d-icon">💬</span><span>Komunikatif</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="section-label">II. KOMPETENSI INTI</div>
+      <div class="form-group">
+        <label>Model Pembelajaran</label>
+        <select class="form-control" id="rppModel">
+          <option>Problem Based Learning (PBL)</option>
+          <option>Project Based Learning (PjBL)</option>
+          <option>Discovery Learning</option>
+          <option>Inquiry Learning</option>
+          <option>Kooperatif (Cooperative Learning)</option>
+          <option>Tatap Muka / Luring</option>
+          <option>Blended Learning</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Target Peserta Didik</label>
+        <select class="form-control" id="rppTarget">
+          <option>Peserta didik reguler/tipikal (umum)</option>
+          <option>Peserta didik dengan kesulitan belajar</option>
+          <option>Peserta didik dengan pencapaian tinggi</option>
+          <option>Heterogen (Diferensiasi Penuh)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tujuan Pembelajaran (TP)</label>
+        <textarea class="form-control" id="rppTP" placeholder="Isi TP atau biarkan AI merumuskan..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Alokasi Waktu</label>
+        <input type="text" class="form-control" id="rppWaktu" value="2 x 45 Menit">
+      </div>
+    </div>
+    <button class="btn-generate rpp" onclick="generate('rpp')">
+      <div class="spinner"></div>
+      <span class="btn-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Buat Modul Ajar</span>
+    </button>
+    <div class="error-box" id="rppError"></div>
+    <div class="result-wrapper" id="rppResult">
+      <button class="btn-susun-ulang" onclick="generate('rpp')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Susun Ulang</button>
+      <div class="export-bar">
+        <button class="btn-export docx" onclick="exportDocx('rpp')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 4 1.5-4 1.5 4 1.5-4"/></svg> DOCX</button>
+        <button class="btn-export pdf" onclick="exportPdf('rpp')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg> PDF</button>
+        <button class="btn-export print" onclick="printResult('rpp')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> CETAK</button>
+        <button class="btn-copy" style="margin-left:auto" onclick="copyResult('rppResultBox')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Salin</button>
+      </div>
+      <div class="result-doc"><div class="result-doc-inner" id="rppResultBox"></div></div>
+    </div>
+    <div class="footer" style="margin-top:30px">© 2026 GuruAI — <a href="#">GuruAI</a></div>
+  </div>
+
+  <!-- PROTA -->
+  <div class="page" id="page-prota">
+    <div class="page-header">
+      <div class="ph-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> AI MODUL</div>
+      <h2>Program Tahunan</h2>
+      <p>Rencanakan alokasi waktu pembelajaran satu tahun secara otomatis.</p>
+    </div>
+    <div class="api-center" id="protaApiStatus"></div>
+    <div class="form-card">
+      <div class="form-group">
+        <label>Nama Sekolah</label>
+        <input type="text" class="form-control" id="protaSekolah" placeholder="Nama Sekolah">
+      </div>
+      <div class="form-group">
+        <label>Tahun Pelajaran</label>
+        <select class="form-control" id="protaTahun">
+          <option>2024/2025</option>
+          <option selected>2025/2026</option>
+          <option>2026/2027</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Mata Pelajaran</label>
+        <input type="text" class="form-control" id="protaMapel" placeholder="Contoh: IPA">
+      </div>
+      <div class="form-group">
+        <label>Pilih Kelas (Fase)</label>
+        <select class="form-control" id="protaKelas">
+          <option value="">Pilih Jenjang</option>
+          <option>Fase Fondasi (PAUD/TK)</option>
+          <option>Kelas 1 SD/MI (Fase A)</option>
+          <option>Kelas 2 SD/MI (Fase A)</option>
+          <option>Kelas 3 SD/MI (Fase B)</option>
+          <option>Kelas 4 SD/MI (Fase B)</option>
+          <option>Kelas 5 SD/MI (Fase C)</option>
+          <option>Kelas 6 SD/MI (Fase C)</option>
+          <option>Kelas 7 SMP/MTs (Fase D)</option>
+          <option>Kelas 8 SMP/MTs (Fase D)</option>
+          <option>Kelas 9 SMP/MTs (Fase D)</option>
+          <option>Kelas 10 SMA/MA/SMK (Fase E)</option>
+          <option>Kelas 11 SMA/MA/SMK (Fase F)</option>
+          <option>Kelas 12 SMA/MA/SMK (Fase F)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Alur Tujuan Pembelajaran (ATP)</label>
+        <textarea class="form-control" id="protaATP" placeholder="Masukkan urutan ATP atau biarkan kosong agar disusun otomatis oleh AI..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Pilih Kurikulum Spesifik</label>
+        <select class="form-control" id="protaKurikulum">
+          <option>Kurikulum Merdeka (Fase Fondasi)</option>
+          <option selected>Kurikulum Merdeka (Fase A-C)</option>
+          <option>Kurikulum Merdeka (Fase D)</option>
+          <option>Kurikulum Merdeka (Fase E-F)</option>
+          <option>Kurikulum 2013 (Revisi)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-generate prota" onclick="generate('prota')">
+      <div class="spinner"></div>
+      <span class="btn-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Buat Program Tahunan</span>
+    </button>
+    <div class="error-box" id="protaError"></div>
+    <div class="result-wrapper" id="protaResult">
+      <button class="btn-susun-ulang" onclick="generate('prota')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Susun Ulang</button>
+      <div class="export-bar">
+        <button class="btn-export docx" onclick="exportDocx('prota')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 4 1.5-4 1.5 4 1.5-4"/></svg> DOCX</button>
+        <button class="btn-export pdf" onclick="exportPdf('prota')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg> PDF</button>
+        <button class="btn-export print" onclick="printResult('prota')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> CETAK</button>
+        <button class="btn-copy" style="margin-left:auto" onclick="copyResult('protaResultBox')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Salin</button>
+      </div>
+      <div class="result-doc"><div class="result-doc-inner" id="protaResultBox"></div></div>
+    </div>
+    <div class="footer" style="margin-top:30px">© 2026 GuruAI</div>
+  </div>
+
+  <!-- PROMES -->
+  <div class="page" id="page-promes">
+    <div class="page-header">
+      <div class="ph-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg> AI MODUL</div>
+      <h2>Program Semester</h2>
+      <p>Distribusi materi pembelajaran dan alokasi waktu per minggu.</p>
+    </div>
+    <div class="api-center" id="promesApiStatus"></div>
+    <div class="form-card">
+      <div class="form-group">
+        <label>Nama Sekolah</label>
+        <input type="text" class="form-control" id="promesSekolah" placeholder="Nama Sekolah">
+      </div>
+      <div class="form-group">
+        <label>Tahun Pelajaran</label>
+        <select class="form-control" id="promesTahun">
+          <option>2024/2025</option>
+          <option selected>2025/2026</option>
+          <option>2026/2027</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Mata Pelajaran</label>
+        <input type="text" class="form-control" id="promesMapel" placeholder="Contoh: Bahasa Indonesia">
+      </div>
+      <div class="form-group">
+        <label>Pilih Kelas (Fase)</label>
+        <select class="form-control" id="promesKelas">
+          <option value="">Pilih Jenjang</option>
+          <option>Fase Fondasi (PAUD/TK)</option>
+          <option>Kelas 1 SD/MI (Fase A)</option>
+          <option>Kelas 2 SD/MI (Fase A)</option>
+          <option>Kelas 3 SD/MI (Fase B)</option>
+          <option>Kelas 4 SD/MI (Fase B)</option>
+          <option>Kelas 5 SD/MI (Fase C)</option>
+          <option>Kelas 6 SD/MI (Fase C)</option>
+          <option>Kelas 7 SMP/MTs (Fase D)</option>
+          <option>Kelas 8 SMP/MTs (Fase D)</option>
+          <option>Kelas 9 SMP/MTs (Fase D)</option>
+          <option>Kelas 10 SMA/MA/SMK (Fase E)</option>
+          <option>Kelas 11 SMA/MA/SMK (Fase F)</option>
+          <option>Kelas 12 SMA/MA/SMK (Fase F)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Semester</label>
+        <select class="form-control" id="promesSemester">
+          <option>Ganjil</option>
+          <option>Genap</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Pilih Kurikulum Spesifik</label>
+        <select class="form-control" id="promesKurikulum">
+          <option>Kurikulum Merdeka (Fase Fondasi)</option>
+          <option selected>Kurikulum Merdeka (Fase A-C)</option>
+          <option>Kurikulum Merdeka (Fase D)</option>
+          <option>Kurikulum Merdeka (Fase E-F)</option>
+          <option>Kurikulum 2013 (Revisi)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Alur Tujuan Pembelajaran (ATP)</label>
+        <textarea class="form-control" id="promesATP" placeholder="Masukkan urutan ATP atau biarkan kosong agar disusun otomatis oleh AI..."></textarea>
+      </div>
+    </div>
+    <button class="btn-generate promes" onclick="generate('promes')">
+      <div class="spinner"></div>
+      <span class="btn-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg> Susun Program Semester</span>
+    </button>
+    <div class="error-box" id="promesError"></div>
+    <div class="result-wrapper" id="promesResult">
+      <button class="btn-susun-ulang" onclick="generate('promes')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Susun Ulang</button>
+      <div class="export-bar">
+        <button class="btn-export docx" onclick="exportDocx('promes')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 4 1.5-4 1.5 4 1.5-4"/></svg> DOCX</button>
+        <button class="btn-export pdf" onclick="exportPdf('promes')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg> PDF</button>
+        <button class="btn-export print" onclick="printResult('promes')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> CETAK</button>
+        <button class="btn-copy" style="margin-left:auto" onclick="copyResult('promesResultBox')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Salin</button>
+      </div>
+      <div class="result-doc"><div class="result-doc-inner" id="promesResultBox"></div></div>
+    </div>
+    <div class="footer" style="margin-top:30px">© 2026 GuruAI</div>
+  </div>
+
+  <!-- LKPD -->
+  <div class="page" id="page-lkpd">
+    <div class="page-header">
+      <div class="ph-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> AI MODUL</div>
+      <h2>Lembar Kerja Siswa</h2>
+      <p>Susun panduan aktivitas belajar siswa yang interaktif.</p>
+    </div>
+    <div class="api-center" id="lkpdApiStatus"></div>
+    <div class="form-card">
+      <div class="form-group">
+        <label>Mata Pelajaran</label>
+        <input type="text" class="form-control" id="lkpdMapel" placeholder="Contoh: Biologi">
+      </div>
+      <div class="form-group">
+        <label>Topik Utama</label>
+        <input type="text" class="form-control" id="lkpdTopik" placeholder="Contoh: Fotosintesis">
+      </div>
+      <div class="form-group">
+        <label>Pilih Kelas (Fase)</label>
+        <select class="form-control" id="lkpdKelas">
+          <option value="">Pilih Jenjang</option>
+          <option>Fase Fondasi (PAUD/TK)</option>
+          <option>Kelas 1 SD/MI (Fase A)</option>
+          <option>Kelas 2 SD/MI (Fase A)</option>
+          <option>Kelas 3 SD/MI (Fase B)</option>
+          <option>Kelas 4 SD/MI (Fase B)</option>
+          <option>Kelas 5 SD/MI (Fase C)</option>
+          <option>Kelas 6 SD/MI (Fase C)</option>
+          <option>Kelas 7 SMP/MTs (Fase D)</option>
+          <option>Kelas 8 SMP/MTs (Fase D)</option>
+          <option>Kelas 9 SMP/MTs (Fase D)</option>
+          <option>Kelas 10 SMA/MA/SMK (Fase E)</option>
+          <option>Kelas 11 SMA/MA/SMK (Fase F)</option>
+          <option>Kelas 12 SMA/MA/SMK (Fase F)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Jenis Aktivitas</label>
+        <select class="form-control" id="lkpdJenis">
+          <option>Eksperimen</option>
+          <option>Diskusi</option>
+          <option>Latihan Soal</option>
+          <option>Proyek</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Alokasi Waktu</label>
+        <input type="text" class="form-control" id="lkpdWaktu" value="2 x 45 Menit">
+      </div>
+      <div class="form-group">
+        <label>Kurikulum</label>
+        <select class="form-control" id="lkpdKurikulum">
+          <option>Kurikulum Merdeka (Fase Fondasi)</option>
+          <option selected>Kurikulum Merdeka (Fase A-C)</option>
+          <option>Kurikulum Merdeka (Fase D)</option>
+          <option>Kurikulum Merdeka (Fase E-F)</option>
+          <option>Kurikulum 2013 (Revisi)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-generate lkpd" onclick="generate('lkpd')">
+      <div class="spinner"></div>
+      <span class="btn-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> Susun LKPD Interaktif</span>
+    </button>
+    <div class="error-box" id="lkpdError"></div>
+    <div class="result-wrapper" id="lkpdResult">
+      <button class="btn-susun-ulang" onclick="generate('lkpd')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Susun Ulang</button>
+      <div class="export-bar">
+        <button class="btn-export docx" onclick="exportDocx('lkpd')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 4 1.5-4 1.5 4 1.5-4"/></svg> DOCX</button>
+        <button class="btn-export pdf" onclick="exportPdf('lkpd')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg> PDF</button>
+        <button class="btn-export print" onclick="printResult('lkpd')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> CETAK</button>
+        <button class="btn-copy" style="margin-left:auto" onclick="copyResult('lkpdResultBox')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Salin</button>
+      </div>
+      <div class="result-doc"><div class="result-doc-inner" id="lkpdResultBox"></div></div>
+    </div>
+    <div class="footer" style="margin-top:30px">© 2026 GuruAI</div>
+  </div>
+
+  <!-- SOAL -->
+  <div class="page" id="page-soal">
+    <div class="page-header">
+      <div class="ph-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> AI MODUL</div>
+      <h2>Bank Soal & Kisi-kisi</h2>
+      <p>Hasilkan butir soal berkualitas HOTS secara otomatis.</p>
+    </div>
+    <div class="api-center" id="soalApiStatus"></div>
+    <div class="form-card">
+      <div class="form-group">
+        <label>Mata Pelajaran</label>
+        <input type="text" class="form-control" id="soalMapel" placeholder="Contoh: Fisika">
+      </div>
+      <div class="form-group">
+        <label>Topik / Materi Spesifik</label>
+        <input type="text" class="form-control" id="soalTopik" placeholder="Contoh: Termodinamika">
+      </div>
+      <div class="form-group">
+        <label>Pilih Kelas (Fase)</label>
+        <select class="form-control" id="soalKelas">
+          <option value="">Pilih Jenjang</option>
+          <option>Fase Fondasi (PAUD/TK)</option>
+          <option>Kelas 1 SD/MI (Fase A)</option>
+          <option>Kelas 2 SD/MI (Fase A)</option>
+          <option>Kelas 3 SD/MI (Fase B)</option>
+          <option>Kelas 4 SD/MI (Fase B)</option>
+          <option>Kelas 5 SD/MI (Fase C)</option>
+          <option>Kelas 6 SD/MI (Fase C)</option>
+          <option>Kelas 7 SMP/MTs (Fase D)</option>
+          <option>Kelas 8 SMP/MTs (Fase D)</option>
+          <option>Kelas 9 SMP/MTs (Fase D)</option>
+          <option>Kelas 10 SMA/MA/SMK (Fase E)</option>
+          <option>Kelas 11 SMA/MA/SMK (Fase F)</option>
+          <option>Kelas 12 SMA/MA/SMK (Fase F)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Jumlah Butir Soal</label>
+        <input type="number" class="form-control" id="soalJumlah" value="10" min="1" max="50">
+      </div>
+      <div class="form-group">
+        <label>Tipe Evaluasi (Standar TKA/AKM)</label>
+        <select class="form-control" id="soalTipe">
+          <option>Pilihan Ganda (Satu Jawaban Benar)</option>
+          <option>Pilihan Ganda Kompleks (Jawaban &gt; 1)</option>
+          <option>Benar / Salah</option>
+          <option>Menjodohkan (Matching)</option>
+          <option>Isian Singkat</option>
+          <option>Uraian / Esai</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Level Kognitif</label>
+        <select class="form-control" id="soalLevel">
+          <option>Mudah (LOTS)</option>
+          <option selected>Sedang (MOTS)</option>
+          <option>Tinggi (HOTS)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Lampiran Kisi-kisi</label>
+        <div class="kisi-toggle">
+          <div class="kisi-btn active" id="kisiDibuat" onclick="setKisi('dibuat')">✓ Dibuat</div>
+          <div class="kisi-btn" id="kisiAbaikan" onclick="setKisi('abaikan')">✕ Abaikan</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Sertakan Soal Bergambar</label>
+        <div class="toggle-row" style="padding:0">
+          <div>
+            <span style="font-size:0.85rem;font-weight:600;color:var(--text)">Sertakan Soal Bergambar <span style="font-size:0.75rem;color:var(--muted2)">(Ilustrasi AI)</span></span>
+            <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">AI akan mendeskripsikan ilustrasi untuk setiap soal</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="soalBergambar">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Kurikulum Spesifik</label>
+        <select class="form-control" id="soalKurikulum">
+          <option>Kurikulum Merdeka (Fase Fondasi)</option>
+          <option selected>Kurikulum Merdeka (Fase A-C)</option>
+          <option>Kurikulum Merdeka (Fase D)</option>
+          <option>Kurikulum Merdeka (Fase E-F)</option>
+          <option>Kurikulum 2013 (Revisi)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-generate soal" onclick="generate('soal')">
+      <div class="spinner"></div>
+      <span class="btn-text">✏️ Hasilkan Bank Soal & Kisi-kisi</span>
+    </button>
+    <div class="error-box" id="soalError"></div>
+    <div class="result-wrapper" id="soalResult">
+      <button class="btn-susun-ulang" onclick="generate('soal')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg> Susun Ulang</button>
+      <div class="export-bar">
+        <button class="btn-export docx" onclick="exportDocx('soal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13l1.5 4 1.5-4 1.5 4 1.5-4"/></svg> DOCX</button>
+        <button class="btn-export pdf" onclick="exportPdf('soal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg> PDF</button>
+        <button class="btn-export print" onclick="printResult('soal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> CETAK</button>
+        <button class="btn-copy" style="margin-left:auto" onclick="copyResult('soalResultBox')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Salin</button>
+      </div>
+      <div class="result-doc"><div class="result-doc-inner" id="soalResultBox"></div></div>
+    </div>
+    <div class="footer" style="margin-top:30px">© 2026 GuruAI</div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="page-header">
+      <div class="ph-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg> PENGATURAN</div>
+      <h2>Konfigurasi</h2>
+      <p>Lengkapi identitas Anda untuk personalisasi dokumen otomatis.</p>
+    </div>
+    <p class="section-title">Profil Guru</p>
+    <div class="form-card">
+      <div class="form-group">
+        <label>Nama Sekolah</label>
+        <input type="text" class="form-control" id="cfgSekolah" placeholder="Contoh: SMA Negeri 1">
+      </div>
+      <div class="form-group">
+        <label>Nama Guru Pengampu</label>
+        <input type="text" class="form-control" id="cfgGuru" placeholder="Nama Lengkap & Gelar">
+      </div>
+      <div class="form-group">
+        <label>NIP / NUPTK</label>
+        <input type="text" class="form-control" id="cfgNIP" placeholder="Masukkan nomor NIP">
+      </div>
+      <div class="form-group">
+        <label>Kepala Sekolah</label>
+        <input type="text" class="form-control" id="cfgKepsek" placeholder="Nama Kepala Sekolah">
+      </div>
+      <div class="form-group">
+        <label>NIP Kepala Sekolah</label>
+        <input type="text" class="form-control" id="cfgNIPKepsek" placeholder="Nomor NIP Kepala">
+      </div>
+      <div class="form-group">
+        <label>Mata Pelajaran Default</label>
+        <input type="text" class="form-control" id="cfgMapel" placeholder="Contoh: Fisika">
+      </div>
+      <div class="form-group">
+        <label>Fase / Kelas Default</label>
+        <select class="form-control" id="cfgFase">
+          <option value="">Pilih Fase Pembelajaran</option>
+          <option>Fase Fondasi (PAUD/TK)</option>
+          <option>Kelas 1 SD/MI (Fase A)</option>
+          <option>Kelas 2 SD/MI (Fase A)</option>
+          <option>Kelas 3 SD/MI (Fase B)</option>
+          <option>Kelas 4 SD/MI (Fase B)</option>
+          <option>Kelas 5 SD/MI (Fase C)</option>
+          <option>Kelas 6 SD/MI (Fase C)</option>
+          <option>Kelas 7 SMP/MTs (Fase D)</option>
+          <option>Kelas 8 SMP/MTs (Fase D)</option>
+          <option>Kelas 9 SMP/MTs (Fase D)</option>
+          <option>Kelas 10 SMA/MA/SMK (Fase E)</option>
+          <option>Kelas 11 SMA/MA/SMK (Fase F)</option>
+          <option>Kelas 12 SMA/MA/SMK (Fase F)</option>
+        </select>
+      </div>
+    </div>
+    <p class="section-title">Konfigurasi API AI</p>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:4px">
+      <div style="flex:1;text-align:center;padding:8px 4px;border-radius:10px;font-size:0.72rem;font-weight:700;font-family:'Space Mono',monospace;color:var(--accent2);background:var(--bg3)">Gemini Flash</div>
+    </div>
+    <div class="api-mode-cards">
+      <div class="api-mode-card gratis" id="cardGratis" onclick="setApiMode('gratis')">
+        <div class="amc-top">
+          <div class="amc-icon gratis" style="color:#5b5ef4"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+          <div>
+            <h4>Mode Gratis</h4>
+          </div>
+        </div>
+        <p>Gunakan kuota publik dari server GuruAI (Terbatas).</p>
+      </div>
+      <div class="api-mode-card kustom selected" id="cardKustom" onclick="setApiMode('kustom')">
+        <div class="amc-top">
+          <div class="amc-icon kustom" style="color:#22c55e"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+          <div>
+            <h4>Mode Kustom</h4>
+          </div>
+        </div>
+        <p>Gunakan API Key pribadi Anda (Tanpa Batas).</p>
+        <div class="api-key-input-wrap">
+          <span class="lock"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+          <input type="password" id="cfgApiKey" placeholder="Masukkan Kunci API Anda">
+        </div>
+        <div class="info-note" style="margin-top:8px">
+          <span class="ni" style="color:#22c55e"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+          <span>Kunci disimpan secara lokal di browser Anda.</span>
+        </div>
+        <div class="info-note">
+          <span class="ni" style="color:#6366f1"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>
+          <span>Baca halaman <strong style="color:var(--accent2)">Tentang</strong> untuk mendapatkan key secara GRATIS.</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveSettings()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Pengaturan</button>
+    <div class="footer" style="margin-top:30px">© 2026 GuruAI</div>
+  </div>
+
+  <!-- TENTANG -->
+  <div class="page" id="page-tentang">
+    <div class="page-header">
+      <div class="ph-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> TENTANG</div>
+      <h2>Tentang <span style="color:var(--accent2)">GuruAI</span></h2>
+    </div>
+    <div class="about-hero">
+      <div class="ai" style="display:flex;align-items:center;justify-content:center;opacity:0.9"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96-.44 2.5 2.5 0 01-2.96-3.08 3 3 0 01-.34-5.58 2.5 2.5 0 013.32-3.97A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96-.44 2.5 2.5 0 002.96-3.08 3 3 0 00.34-5.58 2.5 2.5 0 00-3.32-3.97A2.5 2.5 0 0014.5 2z"/></svg></div>
+      <h2>Platform Cerdas <span>Guru Indonesia</span></h2>
+      <p>Platform yang dirancang khusus untuk memberdayakan guru di seluruh Indonesia melalui teknologi kecerdasan buatan.</p>
+    </div>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="fi-icon" style="color:#6366f1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 01-4.96-.44 2.5 2.5 0 01-2.96-3.08 3 3 0 01-.34-5.58 2.5 2.5 0 013.32-3.97A2.5 2.5 0 019.5 2z"/><path d="M14.5 2A2.5 2.5 0 0112 4.5v15a2.5 2.5 0 004.96-.44 2.5 2.5 0 002.96-3.08 3 3 0 00.34-5.58 2.5 2.5 0 00-3.32-3.97A2.5 2.5 0 0014.5 2z"/></svg></div>
+        <div class="fi-text">
+          <h5>Teknologi Gemini AI</h5>
+          <p>Ditenagai oleh model bahasa mutakhir Gemini AI dari Google. Teknologi ini memungkinkan sistem memahami kurikulum nasional dan menyusun konten yang relevan.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="color:#22c55e"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <div class="fi-text">
+          <h5>Visi & Misi</h5>
+          <p>Kami berkomitmen untuk mengurangi beban administrasi guru agar fokus pada interaksi dan pengembangan karakter siswa.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon" style="color:#f59e0b"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+        <div class="fi-text">
+          <h5>Cara Dapat API Key Gratis</h5>
+          <p>Kunjungi <strong style="color:var(--cyan)">aistudio.google.com</strong> → Login dengan akun Google → Klik "Get API Key" → Buat key baru. <strong>100% GRATIS!</strong></p>
+        </div>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <h4><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Sanggahan Penting (Disclaimer)</h4>
+      <ul>
+        <li>Konten yang dihasilkan oleh AI bersifat generatif dan <strong>belum tentu 100% akurat</strong> sesuai konteks lokal sekolah Anda.</li>
+        <li>Aplikasi ini menggunakan Gemini API yang memiliki batasan kuota token per menit maupun per hari.</li>
+        <li>Jika mendapat pesan kesalahan saat proses pembuatan, kemungkinan besar batas kuota API telah tercapai.</li>
+        <li>Guru tetap memegang kendali penuh dan bertanggung jawab atas materi pembelajaran yang digunakan.</li>
+        <li>Sangat disarankan bagi setiap pengguna untuk meninjau kembali, memvalidasi, dan menyesuaikan hasil dari aplikasi ini sebelum dicetak atau diterapkan.</li>
+      </ul>
+    </div>
+    <div class="footer" style="margin-top:20px">© 2026 GuruAI — Untuk kemajuan pendidikan Indonesia</div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== STATE =====================
+let state = {
+  profil: {}, apiMode: 'kustom', apiKey: '',
+  kisiMode: 'dibuat', currentPage: 'home',
+  theme: 'dark', lastResult: {}, lastParts: {}
+};
+
+// ===================== INIT =====================
+function init() {
+  const saved = localStorage.getItem('guruai_settings');
+  if (saved) {
+    try {
+      const d = JSON.parse(saved);
+      state.profil = d.profil || {};
+      state.apiMode = d.apiMode || 'kustom';
+      state.apiKey = d.apiKey || '';
+      state.theme = d.theme || 'dark';
+    } catch(e){}
+  }
+  applyTheme();
+  populateSettings();
+  updateProfilPreview();
+  updateAllApiStatus();
+}
+
+// ===================== THEME =====================
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(); saveTheme();
+}
+function applyTheme() {
+  document.body.classList.toggle('light', state.theme === 'light');
+  document.getElementById('btnTheme').innerHTML = state.theme === 'dark' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>' : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+}
+function saveTheme() {
+  const saved = JSON.parse(localStorage.getItem('guruai_settings') || '{}');
+  saved.theme = state.theme;
+  localStorage.setItem('guruai_settings', JSON.stringify(saved));
+}
+
+// ===================== NAVIGATION =====================
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const nav = document.getElementById('nav-'+name);
+  if (nav) nav.classList.add('active');
+  state.currentPage = name;
+  closeSidebar();
+  window.scrollTo(0,0);
+  updateAllApiStatus();
+  autofillFromProfil(name);
+}
+function autofillFromProfil(page) {
+  const p = state.profil;
+  if (!p) return;
+  if (['prota','promes'].includes(page)) {
+    const el = document.getElementById(page+'Sekolah');
+    if (el && p.sekolah && !el.value) el.value = p.sekolah;
+  }
+  const mapelIds = {rpp:'rppMapel',prota:'protaMapel',promes:'promesMapel',lkpd:'lkpdMapel',soal:'soalMapel'};
+  const kelasIds = {rpp:'rppKelas',prota:'protaKelas',promes:'promesKelas',lkpd:'lkpdKelas',soal:'soalKelas'};
+  if (mapelIds[page]) {
+    const mi = document.getElementById(mapelIds[page]);
+    const ki = document.getElementById(kelasIds[page]);
+    if (mi && p.mapel && !mi.value) mi.value = p.mapel;
+    if (ki && p.fase && !ki.value) ki.value = p.fase;
+  }
+}
+function toggleSidebar() {
+  if (window.innerWidth >= 960) return; // desktop: sidebar always visible
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  if (window.innerWidth >= 960) return; // desktop: never close
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+// ===================== API STATUS =====================
+function getApiStatusHTML() {
+  const isKustom = state.apiMode === 'kustom' && state.apiKey;
+  if (isKustom) {
+    const fp = state.apiKey.substring(0,6) + '...' + state.apiKey.slice(-4);
+    return '<div class="api-badge kustom"><span class="dot"></span>API MODE &nbsp; KUSTOM (UNLIMITED)</div>'
+         + '<div class="fingerprint">FINGERPRINT: ' + fp + '</div>';
+  }
+  return '<div class="api-badge gratis"><span class="dot"></span>API MODE &nbsp; GRATIS (SISTEM)</div>'
+       + '<div class="fingerprint">FINGERPRINT: SISTEM-DEFAULT</div>';
+}
+function updateAllApiStatus() {
+  ['home','rpp','prota','promes','lkpd','soal'].forEach(function(p) {
+    const el = document.getElementById(p+'ApiStatus');
+    if (el) el.innerHTML = getApiStatusHTML();
+  });
+}
+
+// ===================== SETTINGS =====================
+function setApiMode(mode) {
+  state.apiMode = mode;
+  document.getElementById('cardGratis').classList.toggle('selected', mode==='gratis');
+  document.getElementById('cardKustom').classList.toggle('selected', mode==='kustom');
+}
+function saveSettings() {
+  state.profil = {
+    sekolah: document.getElementById('cfgSekolah').value,
+    guru: document.getElementById('cfgGuru').value,
+    nip: document.getElementById('cfgNIP').value,
+    kepsek: document.getElementById('cfgKepsek').value,
+    nipKepsek: document.getElementById('cfgNIPKepsek').value,
+    mapel: document.getElementById('cfgMapel').value,
+    fase: document.getElementById('cfgFase').value,
+  };
+  state.apiKey = document.getElementById('cfgApiKey').value.trim();
+  localStorage.setItem('guruai_settings', JSON.stringify({
+    profil: state.profil, apiMode: state.apiMode,
+    apiKey: state.apiKey, theme: state.theme
+  }));
+  updateProfilPreview();
+  updateAllApiStatus();
+  showToast('Pengaturan disimpan!');
+}
+function populateSettings() {
+  const p = state.profil;
+  const fields = ['sekolah','guru','nip','kepsek','nipKepsek','mapel','fase'];
+  const ids = ['cfgSekolah','cfgGuru','cfgNIP','cfgKepsek','cfgNIPKepsek','cfgMapel','cfgFase'];
+  fields.forEach(function(f,i){ if(p[f]) document.getElementById(ids[i]).value = p[f]; });
+  if (state.apiKey) document.getElementById('cfgApiKey').value = state.apiKey;
+  setApiMode(state.apiMode);
+}
+function updateProfilPreview() {
+  const p = state.profil;
+  const el = document.getElementById('profilPreview');
+  if (!p.guru && !p.sekolah) {
+    el.innerHTML = '<p class="profil-empty">Belum ada profil. Lengkapi di <strong>Pengaturan</strong></p>';
+    return;
+  }
+  el.innerHTML = '<div class="profil-grid">'
+    + '<div class="profil-item"><label>Nama Guru</label><span>'+(p.guru||'-')+'</span></div>'
+    + '<div class="profil-item"><label>NIP/NUPTK</label><span>'+(p.nip||'-')+'</span></div>'
+    + '<div class="profil-item"><label>Sekolah</label><span>'+(p.sekolah||'-')+'</span></div>'
+    + '<div class="profil-item"><label>Kepala Sekolah</label><span>'+(p.kepsek||'-')+'</span></div>'
+    + '<div class="profil-item"><label>Mapel Default</label><span>'+(p.mapel||'-')+'</span></div>'
+    + '<div class="profil-item"><label>Fase Default</label><span>'+(p.fase||'-')+'</span></div>'
+    + '</div>';
+}
+
+// ===================== DIMENSI =====================
+function toggleDimensi(el) { el.classList.toggle('selected'); }
+function getSelectedDimensi() {
+  return Array.from(document.querySelectorAll('.dimensi-item.selected'))
+    .map(function(e){ return e.dataset.val; }).join(', ');
+}
+
+// ===================== KISI TOGGLE =====================
+function setKisi(mode) {
+  state.kisiMode = mode;
+  document.getElementById('kisiDibuat').classList.toggle('active', mode==='dibuat');
+  document.getElementById('kisiAbaikan').classList.toggle('active', mode==='abaikan');
+}
+
+// ===================== LOADING =====================
+var loadingMessages = {
+  rpp:   { title:'Sedang Menyusun RPP...',    note:'AI SEDANG MERUMUSKAN MODUL AJAR SESUAI KURIKULUM MERDEKA.',             icon:'\u{1F4C4}' },
+  prota: { title:'Sedang Membuat PROTA...',   note:'AI SEDANG MERANCANG PROGRAM TAHUNAN SECARA OTOMATIS.',                  icon:'\u{1F4C5}' },
+  promes:{ title:'Sedang Menyusun PROMES...', note:'AI SEDANG MENDISTRIBUSIKAN MATERI PER SEMESTER.',                       icon:'\u{1F5C2}\uFE0F' },
+  lkpd:  { title:'Sedang Menyusun LKPD...',  note:'AI SEDANG MERANCANG LEMBAR KERJA SISWA INTERAKTIF.',                    icon:'\u{1F4DD}' },
+  soal:  { title:'Sedang Merumuskan Soal...', note:'AI SEDANG MERUMUSKAN SOAL. PROSES INI MEMERLUKAN WAKTU LEBIH LAMA.', icon:'\u270F\uFE0F' },
+};
+function showLoading(type, withImage) {
+  var m = loadingMessages[type] || { title:'Sedang Memproses...', note:'MOHON TUNGGU.' };
+  document.getElementById('loadingTitle').textContent = withImage ? 'Sedang Merumuskan Soal...' : m.title;
+  document.getElementById('loadingNote').textContent  = withImage
+    ? 'AI SEDANG MELUKIS ILUSTRASI. PROSES PEMBUATAN GAMBAR MEMERLUKAN WAKTU LEBIH LAMA DAN JEDA PERMINTAAN YANG LEBIH TINGGI.'
+    : m.note;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// ===================== HELPER =====================
+function v(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+function today() {
+  return new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'});
+}
+
+// ===================== PROMPTS =====================
+function buildPrompt(type) {
+  var p = state.profil;
+  var profil = p.guru
+    ? ('\nGuru: ' + p.guru + ' | NIP: ' + (p.nip||'-') + ' | Sekolah: ' + (p.sekolah||'-') + ' | Kepala Sekolah: ' + (p.kepsek||'-') + ' (NIP: ' + (p.nipKepsek||'-') + ')')
+    : '';
+  var tgl = today();
+
+  if (type === 'rpp') {
+    return 'Kamu adalah asisten guru profesional Indonesia. Buat Modul Ajar / RPP lengkap sesuai Kurikulum Merdeka.\n'
+      + profil + '\n'
+      + '- Mata Pelajaran: ' + v('rppMapel') + '\n'
+      + '- Kelas/Fase: ' + v('rppKelas') + '\n'
+      + '- Materi Pokok: ' + v('rppMateri') + '\n'
+      + '- Dimensi Profil Pelajar Pancasila: ' + (getSelectedDimensi() || 'Bernalar Kritis, Kreatif') + '\n'
+      + '- Model Pembelajaran: ' + v('rppModel') + '\n'
+      + '- Target Peserta Didik: ' + v('rppTarget') + '\n'
+      + '- Tujuan Pembelajaran: ' + (v('rppTP') || 'Rumuskan sendiri secara relevan') + '\n'
+      + '- Alokasi Waktu: ' + v('rppWaktu') + ' | Tanggal: ' + tgl + '\n\n'
+      + 'Susun RPP dengan format lengkap:\n'
+      + '# MODUL AJAR\n'
+      + '## IDENTITAS MODUL\n## CAPAIAN PEMBELAJARAN\n## TUJUAN PEMBELAJARAN\n'
+      + '## PROFIL PELAJAR PANCASILA\n## SARANA & PRASARANA\n## TARGET PESERTA DIDIK\n'
+      + '## MODEL PEMBELAJARAN\n## KEGIATAN PEMBELAJARAN\n'
+      + '### Pendahuluan (10 menit)\n### Kegiatan Inti\n### Penutup (10 menit)\n'
+      + '## ASESMEN\n## REMEDIAL & PENGAYAAN\n## REFLEKSI\n\n'
+      + '---TTD---\n'
+      + 'KS:' + (p.kepsek||'_____________') + '|NIPKS:' + (p.nipKepsek||'_____________') + '\n'
+      + 'GURU:' + (p.guru||'_____________') + '|NIP:' + (p.nip||'_____________') + '|TGL:' + tgl + '\n'
+      + '---END_TTD---\n\nGunakan bahasa Indonesia formal.';
+  }
+  if (type === 'prota') {
+    return 'Buat Program Tahunan (PROTA) lengkap format tabel.\n'
+      + profil + '\n'
+      + '- Sekolah: ' + (v('protaSekolah')||p.sekolah||'') + ' | Tahun Pelajaran: ' + v('protaTahun') + '\n'
+      + '- Mata Pelajaran: ' + v('protaMapel') + ' | Kelas/Fase: ' + v('protaKelas') + '\n'
+      + '- Kurikulum: ' + v('protaKurikulum') + '\n'
+      + '- ATP: ' + (v('protaATP')||'Susun otomatis berdasarkan kurikulum') + '\n\n'
+      + '# PROGRAM TAHUNAN\n## IDENTITAS\n'
+      + '## TABEL PROGRAM TAHUNAN\n'
+      + '| No | Semester | Capaian Pembelajaran | Materi Pokok | Alokasi JP |\n'
+      + 'Isi lengkap semester Ganjil (Juli-Desember) dan Genap (Januari-Juni). Baris terakhir: TOTAL.\n\n'
+      + '---TTD---\n'
+      + 'KS:' + (p.kepsek||'_____________') + '|NIPKS:' + (p.nipKepsek||'_____________') + '\n'
+      + 'GURU:' + (p.guru||'_____________') + '|NIP:' + (p.nip||'_____________') + '|TGL:' + tgl + '\n'
+      + '---END_TTD---';
+  }
+  if (type === 'promes') {
+    return 'Buat Program Semester (PROMES) lengkap format tabel.\n'
+      + profil + '\n'
+      + '- Sekolah: ' + (v('promesSekolah')||p.sekolah||'') + ' | Tahun Pelajaran: ' + v('promesTahun') + '\n'
+      + '- Mata Pelajaran: ' + v('promesMapel') + ' | Kelas/Fase: ' + v('promesKelas') + '\n'
+      + '- Semester: ' + v('promesSemester') + ' | Kurikulum: ' + v('promesKurikulum') + '\n'
+      + '- ATP: ' + (v('promesATP')||'Susun otomatis') + '\n\n'
+      + '# PROGRAM SEMESTER\n## IDENTITAS\n'
+      + '## TABEL DISTRIBUSI MATERI\n'
+      + '| No | Bulan | Minggu ke- | Capaian Pembelajaran/Materi | Alokasi JP | Keterangan |\n'
+      + 'Isi semua bulan dalam semester tersebut. Cantumkan pekan efektif, libur, ujian. Baris terakhir: TOTAL JP.\n\n'
+      + '---TTD---\n'
+      + 'KS:' + (p.kepsek||'_____________') + '|NIPKS:' + (p.nipKepsek||'_____________') + '\n'
+      + 'GURU:' + (p.guru||'_____________') + '|NIP:' + (p.nip||'_____________') + '|TGL:' + tgl + '\n'
+      + '---END_TTD---';
+  }
+  if (type === 'lkpd') {
+    return 'Buat LKPD (Lembar Kerja Peserta Didik) interaktif dan terstruktur.\n'
+      + profil + '\n'
+      + '- Mata Pelajaran: ' + v('lkpdMapel') + ' | Topik: ' + v('lkpdTopik') + ' | Kelas: ' + v('lkpdKelas') + '\n'
+      + '- Jenis Aktivitas: ' + v('lkpdJenis') + ' | Waktu: ' + v('lkpdWaktu') + ' | Kurikulum: ' + v('lkpdKurikulum') + '\n\n'
+      + '# LEMBAR KERJA PESERTA DIDIK\n'
+      + '## IDENTITAS\n## TUJUAN PEMBELAJARAN\n## PETUNJUK PENGERJAAN\n'
+      + '## MATERI SINGKAT\n## KEGIATAN UTAMA\n## PERTANYAAN ANALISIS (3-5 soal HOTS)\n'
+      + '## KESIMPULAN (diisi siswa)\n## REFLEKSI SISWA\n\n'
+      + '---TTD---\n'
+      + 'KS:' + (p.kepsek||'_____________') + '|NIPKS:' + (p.nipKepsek||'_____________') + '\n'
+      + 'GURU:' + (p.guru||'_____________') + '|NIP:' + (p.nip||'_____________') + '|TGL:' + tgl + '\n'
+      + '---END_TTD---\n\nGunakan bahasa yang mudah dipahami siswa.';
+  }
+  if (type === 'soal') {
+    var kisi = state.kisiMode === 'dibuat';
+    var bergambar = document.getElementById('soalBergambar') && document.getElementById('soalBergambar').checked;
+    return 'Buat bank soal profesional standar Kurikulum Merdeka / AKM / TKA Indonesia.\n'
+      + profil + '\n'
+      + '- Mata Pelajaran: ' + v('soalMapel') + ' | Topik: ' + v('soalTopik') + ' | Kelas: ' + v('soalKelas') + '\n'
+      + '- Jumlah: ' + v('soalJumlah') + ' soal | Tipe: ' + v('soalTipe') + ' | Level: ' + v('soalLevel') + '\n'
+      + '- Kurikulum: ' + v('soalKurikulum') + ' | Kisi-kisi: ' + (kisi?'Ya, sertakan':'Tidak perlu') + '\n\n'
+      + (kisi ? '# KISI-KISI SOAL\n| No | Capaian Pembelajaran | Materi | Indikator Soal | Level Kognitif | No. Soal |\n(isi tabel kisi-kisi lengkap)\n\n' : '')
+      + '# BUTIR SOAL\n'
+      + 'Tulis setiap soal dengan format:\n'
+      + '**[Nomor].** Teks soal yang kontekstual\n'
+      + (v('soalTipe').includes('Pilihan Ganda') ? 'A. ...\nB. ...\nC. ...\nD. ...\nE. ...\n' : '')
+      + (v('soalTipe').includes('Uraian') ? '(Pedoman penskoran: ...)\n' : '')
+      + '\n# KUNCI JAWABAN\n'
+      + '| No | Jawaban |\n(tabel kunci jawaban semua nomor)\n\n'
+      + '---TTD---\n'
+      + 'KS:' + (p.kepsek||'_____________') + '|NIPKS:' + (p.nipKepsek||'_____________') + '\n'
+      + 'GURU:' + (p.guru||'_____________') + '|NIP:' + (p.nip||'_____________') + '|TGL:' + tgl + '\n'
+      + '---END_TTD---\n\n'
+      + (bergambar ? '\\n\\nMODE ILUSTRASI: Buat 1 soal yang merujuk pada gambar/diagram, awali dengan Perhatikan gambar berikut atau Berdasarkan diagram berikut. Soal lainnya tetap teks biasa. Sesuai standar ujian.' : '')
+      + '\nPastikan soal kontekstual, relevan, menantang sesuai level ' + v('soalLevel') + '.';
+  }
+  return '';
+}
+
+// ===================== GENERATE =====================
+async function generate(type) {
+  var errorEl = document.getElementById(type+'Error');
+  var resultWrapper = document.getElementById(type+'Result');
+  var resultBox = document.getElementById(type+'ResultBox');
+
+  errorEl.classList.remove('show');
+  resultWrapper.classList.remove('show');
+
+  var validations = {
+    rpp:   [['rppMapel','Mata Pelajaran'],['rppKelas','Kelas/Fase'],['rppMateri','Materi Pokok']],
+    prota: [['protaMapel','Mata Pelajaran'],['protaKelas','Kelas/Fase']],
+    promes:[['promesMapel','Mata Pelajaran'],['promesKelas','Kelas/Fase']],
+    lkpd:  [['lkpdMapel','Mata Pelajaran'],['lkpdTopik','Topik Utama'],['lkpdKelas','Kelas/Fase']],
+    soal:  [['soalMapel','Mata Pelajaran'],['soalTopik','Topik/Materi'],['soalKelas','Kelas/Fase']],
+  };
+  for (var i=0; i<(validations[type]||[]).length; i++) {
+    if (!document.getElementById(validations[type][i][0])?.value) {
+      showError(errorEl, '\u26A0\uFE0F ' + validations[type][i][1] + ' wajib diisi!'); return;
+    }
+  }
+
+  var useCustom = (state.apiMode === 'kustom' && state.apiKey);
+  var useGratis  = (state.apiMode === 'gratis');
+  if (!useCustom && !useGratis) {
+    showError(errorEl, '\u26A0\uFE0F Silakan konfigurasi API Key atau pilih Mode Gratis.'); return;
+  }
+
+  var bergambarEl = document.getElementById('soalBergambar');
+  var imageMode = (type === 'soal' && bergambarEl && bergambarEl.checked);
+
+  var prompt = buildPrompt(type);
+
+  try {
+    if (!imageMode) {
+      // ── MODE NORMAL: teks saja ──
+      showLoading(type, false);
+      var textResult = await callGeminiText(prompt, useCustom);
+      state.lastResult[type] = textResult;
+      state.lastParts[type] = [{ type:'text', content: textResult }];
+      resultBox.innerHTML = formatResultHTML(textResult, type, true);
+      resultWrapper.classList.add('show');
+      hideLoading();
+      resultWrapper.scrollIntoView({behavior:'smooth', block:'start'});
+      showToast('\u2705 Berhasil digenerate!');
+
+    } else {
+      // ── MODE BERGAMBAR: multi-step ──
+      showProgressOverlay();
+
+      // ── STEP 1: Generate semua soal sebagai teks ──
+      setProgress(0, 'Menyusun soal...', 'AI sedang merumuskan ' + v('soalJumlah') + ' butir soal...');
+      var textResult = await callGeminiText(prompt, useCustom);
+      state.lastResult[type] = textResult;
+
+      // ── STEP 2: Parse soal — temukan soal ke-N secara acak untuk bergambar ──
+      setProgress(50, 'Memilih soal untuk ilustrasi...', 'Memilih soal yang paling cocok untuk divisualisasikan...');
+      var soalBlocks = parseSoalBlocks(textResult);
+      var totalSoal = soalBlocks.length;
+
+      // Pilih SATU soal secara acak (strategi variatif seperti Jurnale)
+      // Ambil soal dari tengah supaya kelihatan paling relevan
+      var pickedIdx = Math.floor(Math.random() * totalSoal);
+      var pickedSoal = soalBlocks[pickedIdx] || soalBlocks[0];
+
+      // ── STEP 3: Generate 1 gambar untuk soal terpilih ──
+      setProgress(65, 'Melukis ilustrasi...', 'AI sedang membuat ilustrasi untuk soal ' + (pickedIdx+1) + '...');
+
+      var imgData = null;
+      try {
+        var mapel = v('soalMapel');
+        var topik = v('soalTopik');
+        var imgPrompt = 'Create a clean, simple educational diagram or illustration for this science/academic exam question. '
+          + 'Subject: ' + mapel + '. Topic: ' + topik + '. '
+          + 'Question context: ' + pickedSoal.slice(0, 300) + '. '
+          + 'Style: clean white background, educational textbook style, simple lines and labels, '
+          + 'suitable for printed exam paper, Indonesian school standard. '
+          + 'No text overlays unless it is a label for diagram parts. Black and white or minimal color.';
+
+        imgData = await callGeminiImage(imgPrompt, useCustom);
+        if (imgData) {
+          // Tampilkan thumbnail di progress overlay
+          addProgressThumb(imgData.data, imgData.mimeType);
+        }
+      } catch(imgErr) {
+        console.warn('Image generation failed, continuing without image:', imgErr.message);
+      }
+
+      setProgress(90, 'Menyusun dokumen...', 'Menggabungkan soal dan ilustrasi...');
+      await sleep(400);
+
+      // ── STEP 4: Render — sisipkan gambar setelah soal yang terpilih ──
+      var parts = buildPartsWithImage(textResult, pickedIdx, imgData, type);
+      state.lastParts[type] = parts;
+      resultBox.innerHTML = renderParts(parts, type);
+
+      setProgress(100, 'Selesai!', 'Soal dan ilustrasi berhasil dibuat.');
+      await sleep(600);
+
+      resultWrapper.classList.add('show');
+      hideProgressOverlay();
+      resultWrapper.scrollIntoView({behavior:'smooth', block:'start'});
+      showToast('\u2705 Soal & ilustrasi berhasil dibuat!');
+    }
+
+  } catch(err) {
+    hideLoading();
+    hideProgressOverlay();
+    var msg = err.message || 'Terjadi kesalahan.';
+    if (msg.indexOf('API_KEY') >= 0 || msg.indexOf('api key') >= 0 || msg.indexOf('API key') >= 0)
+      msg = '\u274C API Key tidak valid. Periksa kembali di Pengaturan.';
+    else if (msg.indexOf('quota') >= 0 || msg.indexOf('QUOTA') >= 0)
+      msg = '\u23F3 Kuota API tercapai. Coba beberapa menit lagi atau gunakan API key sendiri.';
+    else if (msg.indexOf('network') >= 0 || msg.indexOf('fetch') >= 0)
+      msg = '\u{1F310} Gagal terhubung. Periksa koneksi internet.';
+    showError(errorEl, msg);
+  }
+}
+
+// ── Helper: sleep ──
+function sleep(ms) { return new Promise(function(r){ setTimeout(r, ms); }); }
+
+// ── Helper: call Gemini text only ──
+async function callGeminiText(prompt, useCustom) {
+  if (useCustom) {
+    var res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + state.apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{temperature:0.7, maxOutputTokens:8192} })
+      }
+    );
+    var data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || 'Gemini API error');
+    var parts = (data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
+    return parts.map(function(p){return p.text||'';}).join('');
+  } else {
+    var res2 = await fetch('/.netlify/functions/gemini', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt: prompt, imageMode: false })
+    });
+    var d2 = await res2.json();
+    if (!res2.ok) throw new Error(d2.error || 'Server error');
+    var pts = d2.parts||[];
+    if (!pts.length && d2.result) return d2.result;
+    return pts.filter(function(p){return p.type==='text';}).map(function(p){return p.content;}).join('');
+  }
+}
+
+// ── Helper: call Gemini image generation ──
+async function callGeminiImage(prompt, useCustom) {
+  var imgModel = 'gemini-2.0-flash-exp-image-generation';
+  var imgConfig = { responseModalities: ['TEXT','IMAGE'], temperature: 0.4 };
+
+  if (useCustom) {
+    var res = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + imgModel + ':generateContent?key=' + state.apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig: imgConfig })
+      }
+    );
+    var data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || 'Image API error');
+    var parts = (data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
+    for (var i=0; i<parts.length; i++) {
+      if (parts[i].inlineData) return { mimeType: parts[i].inlineData.mimeType, data: parts[i].inlineData.data };
+    }
+    return null;
+  } else {
+    var res2 = await fetch('/.netlify/functions/gemini', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt: prompt, imageMode: true })
+    });
+    var d2 = await res2.json();
+    if (!res2.ok) throw new Error(d2.error || 'Image server error');
+    var pts = d2.parts||[];
+    for (var j=0; j<pts.length; j++) {
+      if (pts[j].type==='image') return { mimeType: pts[j].mimeType, data: pts[j].data };
+    }
+    return null;
+  }
+}
+
+// ── Helper: parse soal blocks dari teks ──
+function parseSoalBlocks(text) {
+  // Cari pola nomor soal: "1.", "**1.**", "Nomor 1", dst
+  var blocks = [];
+  var lines = text.split('\n');
+  var current = '';
+  var inSoal = false;
+  for (var i=0; i<lines.length; i++) {
+    var line = lines[i];
+    var isSoalStart = /^(\*{0,2})(\d+)[\.\)]\s/.test(line.trim()) ||
+                      /^(Soal|SOAL)\s+\d+/i.test(line.trim());
+    if (isSoalStart) {
+      if (current.trim()) blocks.push(current.trim());
+      current = line + '\n';
+      inSoal = true;
+    } else if (inSoal) {
+      current += line + '\n';
+    }
+  }
+  if (current.trim()) blocks.push(current.trim());
+  // Fallback: kalau tidak bisa parse, return seluruh teks sebagai 1 blok
+  if (!blocks.length) blocks = [text.slice(0, 500)];
+  return blocks;
+}
+
+// ── Helper: build parts dengan gambar disisipkan setelah soal terpilih ──
+function buildPartsWithImage(textResult, pickedIdx, imgData, type) {
+  var parts = [];
+  if (!imgData) {
+    parts.push({ type:'text', content: textResult });
+    return parts;
+  }
+
+  var soalBlocks = parseSoalBlocks(textResult);
+
+  // Pisahkan teks: sebelum soal bergambar, soal bergambar, dan setelah
+  var beforeIdx = soalBlocks.slice(0, pickedIdx).join('\n\n');
+  var targetSoal = soalBlocks[pickedIdx] || '';
+  var afterIdx   = soalBlocks.slice(pickedIdx + 1).join('\n\n');
+
+  // Temukan prefix (kisi-kisi, identitas) sebelum soal pertama
+  var firstSoalPos = textResult.search(/^(\*{0,2})(\d+)[\.\)]\s/m);
+  var prefix = firstSoalPos > 0 ? textResult.slice(0, firstSoalPos) : '';
+
+  if (prefix) parts.push({ type:'text', content: prefix });
+  if (beforeIdx) parts.push({ type:'text', content: beforeIdx + '\n\n' });
+
+  // Soal terpilih + gambar
+  parts.push({ type:'text', content: targetSoal + '\n\n' });
+  parts.push({ type:'image', mimeType: imgData.mimeType, data: imgData.data, soalIdx: pickedIdx+1 });
+
+  if (afterIdx) parts.push({ type:'text', content: '\n\n' + afterIdx });
+
+  // Cari suffix (kunci jawaban, TTD) setelah soal terakhir
+  var kunciIdx = textResult.lastIndexOf('KUNCI JAWABAN');
+  if (kunciIdx < 0) kunciIdx = textResult.lastIndexOf('# KUNCI');
+  if (kunciIdx > 0) {
+    var suffix = textResult.slice(kunciIdx);
+    parts.push({ type:'text', content: '\n\n' + suffix });
+  }
+
+  return parts;
+}
+
+// ── Progress Overlay Controls ──
+function showProgressOverlay() {
+  document.getElementById('genProgressOverlay').classList.add('show');
+  document.getElementById('gpoImgPreview').innerHTML = '';
+  setProgress(0, 'Mempersiapkan...', '');
+}
+function hideProgressOverlay() {
+  document.getElementById('genProgressOverlay').classList.remove('show');
+}
+function setProgress(pct, step, subtitle) {
+  document.getElementById('gpoBar').style.width = pct + '%';
+  document.getElementById('gpoPct').textContent = pct + '%';
+  document.getElementById('gpoStep').textContent = step;
+  if (subtitle) document.getElementById('gpoSubtitle').textContent = subtitle;
+  if (pct >= 100) {
+    document.getElementById('gpoTitle').textContent = 'Selesai!';
+    document.getElementById('gpoBar').style.background = 'var(--green)';
+  } else {
+    document.getElementById('gpoTitle').textContent = 'Sedang Merumuskan Soal...';
+  }
+}
+function addProgressThumb(b64, mime) {
+  var img = document.createElement('img');
+  img.src = 'data:' + mime + ';base64,' + b64;
+  img.className = 'gpo-thumb';
+  img.alt = 'Preview';
+  document.getElementById('gpoImgPreview').appendChild(img);
+}
+
+// ===================== FORMAT RESULT =====================
+function formatResultHTML(text, type, addHeader) {
+  var p = state.profil;
+  var tgl = today();
+
+  // Extract TTD block
+  var ttdHTML = '';
+  var ttdMatch = text.match(/---TTD---\n?([\s\S]*?)---END_TTD---/);
+  if (ttdMatch) {
+    text = text.replace(/---TTD---[\s\S]*?---END_TTD---/, '');
+    ttdHTML = '<div class="ttd-section">'
+      + '<div class="ttd-box"><p>Mengetahui,</p><p><strong>Kepala Sekolah</strong></p>'
+      + '<div class="ttd-name">' + (p.kepsek||'_____________________') + '</div>'
+      + '<div class="nip">NIP. ' + (p.nipKepsek||'.............................') + '</div></div>'
+      + '<div class="ttd-box">'
+      + '<p>' + (p.sekolah ? p.sekolah + ', ' : '') + tgl + '</p>'
+      + '<p><strong>Guru Pengampu</strong></p>'
+      + '<div class="ttd-name">' + (p.guru||'_____________________') + '</div>'
+      + '<div class="nip">NIP. ' + (p.nip||'.............................') + '</div></div>'
+      + '</div>';
+  }
+
+  // Header
+  var headerHTML = '';
+  if (p.sekolah && addHeader !== false) {
+    headerHTML = '<div class="header-info">'
+      + '<p><strong>' + p.sekolah.toUpperCase() + '</strong></p>'
+      + '<p>Tahun Pelajaran ' + new Date().getFullYear() + '/' + (new Date().getFullYear()+1) + '</p>'
+      + '</div>';
+  }
+
+  // Parse markdown ke HTML
+  var html = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\[ILUSTRASI: ([^\]]+)\]/g, '<div class=\"ilustrasi-box\"><div class=\"il-header\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><polyline points=\"21 15 16 10 5 21\"/></rect></svg> ILUSTRASI AI</div><p>$1</p></div>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/^[-•\*] (.+)$/gm,'<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/\n/g,'<br>');
+
+  return headerHTML + html + ttdHTML;
+}
+
+// ===================== RENDER PARTS (TEXT + IMAGE) =====================
+function renderParts(parts, type) {
+  var html = '';
+  var headerDone = false;
+
+  parts.forEach(function(part) {
+    if (part.type === 'text') {
+      html += formatResultHTML(part.content, type, !headerDone);
+      if (part.content && part.content.trim()) headerDone = true;
+    } else if (part.type === 'image') {
+      var src = 'data:' + part.mimeType + ';base64,' + part.data;
+      var soalLabel = part.soalIdx ? 'Ilustrasi untuk Soal No. ' + part.soalIdx : 'Ilustrasi AI';
+      html += '<div class="soal-image-wrap">'
+            + '<img src="' + src + '" alt="' + soalLabel + '" loading="lazy"/>'
+            + '<div class="soal-image-cap">'
+            + '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
+            + ' ' + soalLabel + ' &nbsp;|&nbsp; Ilustrasi AI'
+            + '</div>'
+            + '</div>';
+    }
+  });
+
+  return html;
+}
+
+// ===================== EXPORT =====================
+function getPrintHTML(type) {
+  var p = state.profil;
+  var content = document.getElementById(type+'ResultBox') ? document.getElementById(type+'ResultBox').innerHTML : '';
+  return '<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">'
+    + '<title>GuruAI - ' + type.toUpperCase() + '</title>'
+    + '<style>'
+    + 'body{font-family:Arial,sans-serif;font-size:12pt;color:#111;padding:20mm 25mm;margin:0}'
+    + 'h1{font-size:16pt;text-align:center;margin-bottom:4px}'
+    + 'h2{font-size:13pt;color:#1a1a8c;border-left:4px solid #1a1a8c;padding-left:8px;margin:16px 0 8px}'
+    + 'h3{font-size:12pt;margin:12px 0 6px}'
+    + 'table{width:100%;border-collapse:collapse;margin:10px 0;font-size:10pt}'
+    + 'th{background:#1a1a8c;color:white;padding:6px 8px;text-align:left}'
+    + 'td{padding:5px 8px;border:1px solid #ccc}'
+    + 'tr:nth-child(even) td{background:#f5f5ff}'
+    + '.ttd-section{display:flex;justify-content:space-between;margin-top:32px}'
+    + '.ttd-box{text-align:center;min-width:160px}'
+    + '.ttd-name{font-weight:700;border-top:1.5px solid #111;padding-top:4px;margin-top:56px}'
+    + '.nip{font-size:10pt;color:#555}'
+    + '.header-info{text-align:center;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:16px}'
+    + '@media print{body{padding:15mm 20mm}}'
+    + '</style></head><body>' + content + '</body></html>';
+}
+
+function exportPdf(type) {
+  var w = window.open('','_blank');
+  w.document.write(getPrintHTML(type));
+  w.document.close();
+  w.onload = function(){ w.print(); };
+  showToast('\u{1F5A8}\uFE0F Membuka dialog cetak/simpan PDF...');
+}
+
+function printResult(type) {
+  var w = window.open('','_blank');
+  w.document.write(getPrintHTML(type));
+  w.document.close();
+  w.onload = function(){ w.print(); };
+}
+
+function exportDocx(type) {
+  var raw = state.lastResult[type];
+  if (!raw) { showToast('Belum ada hasil untuk diunduh.'); return; }
+  var p = state.profil;
+  var tgl = today();
+  var yr = new Date().getFullYear();
+
+  // Pastikan docx library tersedia
+  if (typeof docx === 'undefined') {
+    // Fallback ke txt jika library belum load
+    var clean = raw.replace(/---TTD---[\s\S]*?---END_TTD---/,'')
+                   .replace(/\*\*/g,'').replace(/^#+\s/gm,'').trim();
+    var blob = new Blob([clean], {type:'text/plain;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'GuruAI_' + type.toUpperCase() + '.txt';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    showToast('Diunduh sebagai .txt (buka dengan Word)');
+    return;
+  }
+
+  try {
+    var D = docx;
+    var clean = raw.replace(/---TTD---[\s\S]*?---END_TTD---/,'').trim();
+    var lines = clean.split('\n');
+    var children = [];
+
+    // Header sekolah
+    if (p.sekolah) {
+      children.push(new D.Paragraph({
+        children:[new D.TextRun({text: p.sekolah.toUpperCase(), bold:true, size:28, font:'Arial'})],
+        alignment: D.AlignmentType.CENTER,
+        spacing:{after:40}
+      }));
+      children.push(new D.Paragraph({
+        children:[new D.TextRun({text:'Tahun Pelajaran ' + yr + '/' + (yr+1), size:22, font:'Arial'})],
+        alignment: D.AlignmentType.CENTER,
+        border:{bottom:{style:D.BorderStyle.SINGLE, size:6, color:'111111'}},
+        spacing:{after:200}
+      }));
+    }
+
+    // Parse lines
+    lines.forEach(function(line) {
+      var trimmed = line.trim();
+      if (!trimmed) { children.push(new D.Paragraph({spacing:{after:80}})); return; }
+      if (trimmed.startsWith('# ')) {
+        children.push(new D.Paragraph({
+          children:[new D.TextRun({text: trimmed.slice(2), bold:true, size:28, font:'Arial', color:'1a1a8c'})],
+          spacing:{before:240, after:120}
+        }));
+      } else if (trimmed.startsWith('## ')) {
+        children.push(new D.Paragraph({
+          children:[new D.TextRun({text: trimmed.slice(3), bold:true, size:24, font:'Arial', color:'2563eb'})],
+          spacing:{before:200, after:80},
+          border:{left:{style:D.BorderStyle.SINGLE, size:18, color:'5b5ef4'}}
+        }));
+      } else if (trimmed.startsWith('### ')) {
+        children.push(new D.Paragraph({
+          children:[new D.TextRun({text: trimmed.slice(4), bold:true, size:22, font:'Arial'})],
+          spacing:{before:160, after:60}
+        }));
+      } else if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+        children.push(new D.Paragraph({
+          children:[new D.TextRun({text: trimmed.slice(2), size:22, font:'Arial'})],
+          bullet:{level:0},
+          spacing:{after:60}
+        }));
+      } else if (/^\d+\./.test(trimmed)) {
+        var txt = trimmed.replace(/^\d+\.\s*/,'');
+        children.push(new D.Paragraph({
+          children:[new D.TextRun({text: txt, size:22, font:'Arial'})],
+          numbering:{reference:'mainNum', level:0},
+          spacing:{after:60}
+        }));
+      } else {
+        // Bold markers **text**
+        var parts = trimmed.split(/\*\*(.+?)\*\*/);
+        var runs = parts.map(function(part, i){
+          return new D.TextRun({text: part, bold: i%2===1, size:22, font:'Arial'});
+        });
+        children.push(new D.Paragraph({children: runs, spacing:{after:80}}));
+      }
+    });
+
+    // TTD section
+    children.push(new D.Paragraph({spacing:{before:480}}));
+    var ttdRow = new D.TableRow({
+      children:[
+        new D.TableCell({
+          borders:{top:{style:D.BorderStyle.NONE},bottom:{style:D.BorderStyle.NONE},left:{style:D.BorderStyle.NONE},right:{style:D.BorderStyle.NONE}},
+          width:{size:4500, type:D.WidthType.DXA},
+          children:[
+            new D.Paragraph({children:[new D.TextRun({text:'Mengetahui,', size:22, font:'Arial'})]}),
+            new D.Paragraph({children:[new D.TextRun({text:'Kepala Sekolah', bold:true, size:22, font:'Arial'})]}),
+            new D.Paragraph({spacing:{before:600}}),
+            new D.Paragraph({
+              children:[new D.TextRun({text: p.kepsek||'_____________________', bold:true, size:22, font:'Arial'})],
+              border:{top:{style:D.BorderStyle.SINGLE, size:4, color:'111111'}}
+            }),
+            new D.Paragraph({children:[new D.TextRun({text:'NIP. '+(p.nipKepsek||'.............................'), size:20, font:'Arial', color:'555555'})]})
+          ]
+        }),
+        new D.TableCell({
+          borders:{top:{style:D.BorderStyle.NONE},bottom:{style:D.BorderStyle.NONE},left:{style:D.BorderStyle.NONE},right:{style:D.BorderStyle.NONE}},
+          width:{size:4500, type:D.WidthType.DXA},
+          children:[
+            new D.Paragraph({children:[new D.TextRun({text:(p.sekolah||'') + ', ' + tgl, size:22, font:'Arial'})]}),
+            new D.Paragraph({children:[new D.TextRun({text:'Guru Pengampu', bold:true, size:22, font:'Arial'})]}),
+            new D.Paragraph({spacing:{before:600}}),
+            new D.Paragraph({
+              children:[new D.TextRun({text: p.guru||'_____________________', bold:true, size:22, font:'Arial'})],
+              border:{top:{style:D.BorderStyle.SINGLE, size:4, color:'111111'}}
+            }),
+            new D.Paragraph({children:[new D.TextRun({text:'NIP. '+(p.nip||'.............................'), size:20, font:'Arial', color:'555555'})]})
+          ]
+        })
+      ]
+    });
+    children.push(new D.Table({
+      width:{size:9000, type:D.WidthType.DXA},
+      columnWidths:[4500,4500],
+      rows:[ttdRow]
+    }));
+
+    var doc = new D.Document({
+      numbering:{config:[
+        {reference:'mainNum', levels:[{
+          level:0, format:D.LevelFormat.DECIMAL, text:'%1.',
+          alignment:D.AlignmentType.LEFT,
+          style:{paragraph:{indent:{left:720, hanging:360}}}
+        }]}
+      ]},
+      sections:[{
+        properties:{
+          page:{
+            size:{width:11906, height:16838},
+            margin:{top:1440, right:1134, bottom:1440, left:1134}
+          }
+        },
+        children: children
+      }]
+    });
+
+    D.Packer.toBlob(doc).then(function(blob){
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'GuruAI_' + type.toUpperCase() + '_' + new Date().toISOString().slice(0,10) + '.docx';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('File .docx berhasil diunduh!');
+    });
+
+  } catch(e) {
+    console.error('docx error:', e);
+    showToast('Gagal buat .docx: ' + e.message);
+  }
+}
+
+// ===================== COPY =====================
+function copyResult(id) {
+  var el = document.getElementById(id);
+  var text = el ? (el.innerText || el.textContent) : '';
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function(){ showToast('\u{1F4CB} Disalin ke clipboard!'); });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('\u{1F4CB} Disalin!');
+  }
+}
+
+function showError(el, msg) {
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth'});
+}
+
+// ===================== TOAST =====================
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+// ===================== START =====================
+init();
+</script>
+</body>
+</html>
